@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>V-Medcav · ML/XAI Research</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR2fCJ6r82NK1S4Skgr8G2H6s7pLtT1e9GBBDE1BmkCwSj2x" crossorigin="anonymous" />
+  <style>
+    @keyframes heroFadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hero-wide .hero-content { animation: heroFadeIn 0.6s var(--ease-standard) both; }
+    .hero-wide .hero-visual  { animation: heroFadeIn 0.6s var(--ease-standard) 0.15s both; }
+
+    .hero-wide {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: clamp(480px, 60vh, 640px);
+      padding: 0;
+      overflow: hidden;
+    }
+    .hero-wide .hero-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 80% 40%, color-mix(in oklch, var(--accent) 18%, transparent), transparent),
+        radial-gradient(ellipse 60% 50% at 20% 70%, color-mix(in oklch, var(--accent) 8%, transparent), transparent),
+        var(--bg);
+    }
+    .hero-wide .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(90deg, color-mix(in oklch, var(--accent) 3%, transparent) 0px, color-mix(in oklch, var(--accent) 3%, transparent) 1px, transparent 1px, transparent 48px),
+        repeating-linear-gradient(0deg, color-mix(in oklch, var(--accent) 2%, transparent) 0px, color-mix(in oklch, var(--accent) 2%, transparent) 1px, transparent 1px, transparent 48px);
+      opacity: 0.6;
+    }
+    .hero-wide .hero-content {
+      position: relative;
+      z-index: 1;
+      grid-column: 1 / 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(48px, 8vw, 120px) var(--container-gutter);
+      max-width: 580px;
+    }
+    .hero-wide .hero-content h1 { font-size: clamp(36px, 4.2vw, 60px); margin-bottom: var(--space-5); }
+    .hero-wide .hero-content .lead { font-size: clamp(15px, 1.3vw, 17px); margin-bottom: var(--space-7); }
+    .hero-wide .hero-visual {
+      position: relative;
+      z-index: 1;
+      grid-column: 2 / 3;
+      display: grid;
+      place-items: center;
+      padding: var(--container-gutter);
+    }
+    .hero-wide .hero-visual-inner {
+      width: 100%;
+      max-width: 420px;
+      aspect-ratio: 4 / 3;
+      border-radius: var(--radius-lg);
+      background:
+        radial-gradient(ellipse at 30% 40%, color-mix(in oklch, var(--accent) 25%, var(--surface)), transparent 70%),
+        var(--surface);
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      padding: var(--space-6);
+      box-shadow: var(--elev-raised);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-wide .hero-visual-inner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, color-mix(in oklch, var(--accent) 6%, transparent) 0%, transparent 50%);
+    }
+    .hero-wide .hero-visual-label {
+      position: relative;
+      z-index: 1;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      letter-spacing: 0.04em;
+      color: var(--meta);
+      text-align: center;
+      line-height: 1.6;
+    }
+    @media (max-width: 820px) {
+      .hero-wide { grid-template-columns: 1fr; min-height: auto; }
+      .hero-wide .hero-visual { grid-column: 1 / 2; padding: 0 var(--container-gutter) var(--space-8); }
+      .hero-wide .hero-content { padding-bottom: var(--space-6); }
+      .hero-wide .hero-visual-inner { max-width: 100%; }
+    }
+
+    .viz-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-6); }
+    @media (max-width: 768px) { .viz-grid { grid-template-columns: 1fr; } }
+    .discussion-text { max-width: 680px; }
+    .discussion-text p { margin-bottom: var(--space-5); color: var(--fg-2); }
+
+    /* ─── Lightbox (click-to-expand) ──────────────────────────── */
+    .lb-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: oklch(0% 0 0 / 0.72);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: grid;
+      grid-template-rows: 1fr auto;
+      align-items: center;
+      justify-items: center;
+      padding: 40px 40px 32px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      cursor: zoom-out;
+      overflow-y: auto;
+    }
+    .lb-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .lb-backdrop .lb-img-wrap {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+    }
+    .lb-backdrop .lb-img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 48px oklch(0% 0 0 / 0.4);
+      cursor: zoom-in;
+      transform: scale(0.92);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s ease, max-height 0.3s ease;
+      background: var(--surface);
+      object-fit: contain;
+    }
+    .lb-backdrop.open .lb-img {
+      transform: scale(1);
+    }
+    .lb-backdrop .lb-img.zoomed {
+      max-width: none;
+      max-height: none;
+      cursor: zoom-out;
+    }
+    .lb-backdrop .lb-zoom-hint {
+      position: fixed;
+      bottom: 88px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: oklch(0% 0 0 / 0.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: oklch(90% 0 0);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font: 400 12px/1.4 var(--font-body);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .lb-backdrop.open .lb-zoom-hint {
+      opacity: 1;
+    }
+    .lb-backdrop .lb-zoom-hint.hidden {
+      opacity: 0;
+    }
+    .lb-backdrop .lb-close {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 50%;
+      background: oklch(100% 0 0 / 0.9);
+      color: var(--fg);
+      font: 500 20px/40px var(--font-display);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: background 0.15s;
+      box-shadow: 0 2px 12px oklch(0% 0 0 / 0.18);
+      z-index: 1;
+    }
+    .lb-backdrop .lb-close:hover { background: oklch(100% 0 0 / 0.6); }
+    .lb-backdrop .lb-caption {
+      max-width: min(760px, 90vw);
+      background: oklch(0% 0 0 / 0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: oklch(90% 0 0);
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      font: 400 13px/1.5 var(--font-body);
+      text-align: center;
+      pointer-events: none;
+      opacity: 0;
+      margin-top: 16px;
+      transition: opacity 0.25s ease 0.1s;
+    }
+    .lb-backdrop.open .lb-caption { opacity: 1; }
+
+    .ph-img img, .ph-img.has-image img, figure.chart img {
+      cursor: zoom-in;
+    }
+  </style>
+</head>
+<body>
+
+<main>
+  <section class="hero-wide" data-od-id="hero" data-progress-label="V-Medcav" data-progress-level="section">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <p class="eyebrow" style="--eyebrow-color: var(--accent); color: var(--accent);">REAL-WORLD VALIDATION · V-MEDCAV</p>
+      <h1>From Synthetic Shapes to a Real Melanoma Classifier</h1>
+      <p class="lead">Every methodological lesson from the AIXI-Shape / TXUXI controlled benchmark is now turned on a clinically deployed model: the RECOD Inception-V4 melanoma classifier, probed with Visual-TCAV against a 17-concept dermoscopic vocabulary drawn from the seven-point checklist and PH². Here the ground truth is not a synthetic mask — it is a board-certified clinical reading.</p>
+      <div class="hero-cta">
+        <a href="#method" class="btn btn-primary btn-arrow">Concepts &amp; pools</a>
+        <a href="#results" class="btn btn-secondary btn-arrow">Global results</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-visual-inner">
+        <div class="hero-visual-label">
+          RECOD Inception-V4 · MEL=0 / SK=1 / NEV=2<br />17 derm7pt + PH² concepts<br />features.19 / .20 / .21 · per-concept absent pools
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" data-od-id="method" data-progress-label="Concepts &amp; Pools" data-progress-level="section" id="method">
+    <div class="container">
+      <div class="section-head">
+        <p class="section-num">01</p>
+        <h2>The model, the vocabulary, and the pool that makes it work</h2>
+        <p class="section-lede">The classifier is a RECOD-trained Inception-V4 (<code>Dropout(0.5) → Linear(1536, 3)</code> head, checkpoint <code>inception_v4_recod.pt</code>) with class order <strong>MEL = 0, SK = 1, NEV = 2</strong>. Visual-TCAV concept maps and global scores are probed at the three terminal Inception-C blocks — <code>features.19</code>, <code>features.20</code>, <code>features.21</code> — each an 8×8 spatial grid, with <code>features.21</code> the bottleneck immediately before the classification head.</p>
+      </div>
+      <p style="max-width: 70ch; margin-top: var(--space-4);">The concept vocabulary is the 17-concept dermoscopic set introduced by Lucieri et al., itself derived from the seven-point checklist (derm7pt, 14 concepts) and the structured PH² annotations (3 concepts). It spans three interpretive axes: <em>morphological structures</em> (pigment network, streaks, dots &amp; globules, vascular structures, regression structures, pigmentation, blue-whitish veil), <em>global symmetry</em> (one- and two-axis asymmetry), and <em>chromatic complexity</em> (number of distinct colours). Each concept carries a documented clinical polarity with respect to melanoma (Mel⁺ = malignancy-indicative, Mel⁻ = benign/regular):</p>
+      <table class="ds-table" style="margin-top: var(--space-5);">
+        <thead><tr><th>Code</th><th>Concept</th><th>Source</th><th class="num-col">Polarity</th></tr></thead>
+        <tbody>
+          <tr><td><code>PN_AT</code></td><td>Atypical pigment network</td><td>derm7pt</td><td class="num-col">Mel+</td></tr>
+          <tr><td><code>PN_T</code></td><td>Typical pigment network</td><td>derm7pt</td><td class="num-col">Mel−</td></tr>
+          <tr><td><code>BWV</code></td><td>Blue-whitish veil</td><td>derm7pt</td><td class="num-col">Mel+</td></tr>
+          <tr><td><code>ST_IR</code> / <code>ST_R</code></td><td>Streaks — irregular / regular</td><td>derm7pt</td><td class="num-col">Mel+ / Mel−</td></tr>
+          <tr><td><code>DG_IR</code> / <code>DG_R</code></td><td>Dots &amp; globules — irregular / regular</td><td>derm7pt</td><td class="num-col">Mel+ / Mel−</td></tr>
+          <tr><td><code>VS_IR</code> / <code>VS_R</code></td><td>Vascular structures — irregular / regular</td><td>derm7pt</td><td class="num-col">Mel+ / Mel−</td></tr>
+          <tr><td><code>PIG_IR</code> / <code>PIG_R</code></td><td>Pigmentation — irregular / regular</td><td>derm7pt</td><td class="num-col">Mel+ / Mel−</td></tr>
+          <tr><td><code>RS_BA</code> / <code>RS_WA</code> / <code>RS_CO</code></td><td>Regression structures — blue areas / white areas / combinations</td><td>derm7pt</td><td class="num-col">Mel+</td></tr>
+          <tr><td><code>ASYM</code> / <code>ASYM_2AX</code></td><td>Asymmetry / two-axis asymmetry</td><td>PH²</td><td class="num-col">Mel+</td></tr>
+          <tr><td><code>COL3</code></td><td>Three or more colours</td><td>PH²</td><td class="num-col">Mel+</td></tr>
+        </tbody>
+      </table>
+      <div class="grid-1-2" style="margin-top: var(--space-8);">
+        <div class="ph-img wide" aria-label="Per-concept negative pool construction diagram" style="align-self: start;">
+          [ Per-concept absent pool · e.g. PN_AT positives = atypical-network derm7pt images; PN_AT negatives = same archive, pigment_network ∈ {typical, absent} ]
+        </div>
+        <div>
+          <p>The single design decision that makes these attributions discriminative — rather than smeared across every concept — is the <strong>negative reference pool</strong>. Carrying forward the controlled-benchmark conclusion that <em>matched-absent beats matched-blind and out-of-distribution pools</em>, each of the 17 concepts here is contrasted not against a generic photo archive or a shared "any dermoscopic image" pool, but against <strong>same-source images in which that specific concept is documented as absent or typical/regular</strong> — e.g. <code>PN_AT</code>'s negatives are derm7pt images whose pigment network is <em>not</em> atypical (<code>pigment_network ∈ {absent, typical}</code>); <code>COL3</code>'s negatives are PH² images with <code>COL3 == 0</code>.</p>
+          <p style="margin-top: var(--space-4);">CAVs are built with the <strong>centroid</strong> method (difference of positive- and negative-pool activation centroids — Visual-TCAV's original construction), capped at 150 images per concept, with 50 integrated-gradients steps. The global test set is the ISIC-2019 strict-NV index, ≈ 51–53 images per class. <code>tcav/visualtcav_pytorch.py</code> was extended so the negative-pool argument can be a <code>{concept: folder}</code> dictionary — resolving and computing negative activations <em>per concept</em> — while a plain string keeps the original shared-pool behaviour byte-identical for backward compatibility.</p>
+          <div class="math-block" style="margin-top: var(--space-5);">
+            $$ M^c = \text{ReLU}\!\left( \sum_k p_k^c \cdot \text{fmaps}_k \right) $$
+          </div>
+          <p style="margin-top: var(--space-4);">where $p_k^c$ is the integrated-gradients-derived importance of feature map $k$ for concept $c$, projected through the CAV direction — yielding a spatial concept map directly comparable, channel by channel, across the seventeen concepts and three classes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" data-od-id="results" data-progress-label="Global Results" data-progress-level="subsection" id="results">
+    <div class="container">
+      <div class="section-head">
+        <p class="section-num">02</p>
+        <h2>Three classes, one set of CAVs, three clinically coherent stories</h2>
+        <p class="section-lede">With the per-concept absent pool in place, the global Visual-TCAV explainer — run once, with the <em>same</em> seventeen CAVs — reproduces the clinical structure of all three diagnostic classes simply by changing which logit it targets. That a single fixed set of concept directions realigns itself correctly under three different targets is the strongest evidence that the attributions track real model behaviour rather than pool artefacts.</p>
+      </div>
+      <div class="grid-3" style="margin-top: var(--space-6);">
+        <div class="stat scroll-entrance">
+          <div class="stat-num num">7.0<span class="stat-unit">×</span></div>
+          <p class="stat-label">malignant-vs-benign mean attribution ratio for MEL at the bottleneck <code>features.21</code> — melanoma-indicative concepts dominate</p>
+        </div>
+        <div class="stat scroll-entrance">
+          <div class="stat-num num">0.03<span class="stat-unit">×</span></div>
+          <p class="stat-label">the same ratio for NEV — a clean polarity inversion: benign "regular/typical" concepts now top the ranking, melanoma concepts collapse to ≈0</p>
+        </div>
+        <div class="stat scroll-entrance">
+          <div class="stat-num num">1.8<span class="stat-unit">×</span></div>
+          <p class="stat-label">the ratio for SK — flat, low, no dominant concept: the expected signature of a vocabulary gap (the 17 concepts are melanoma/nevus-oriented)</p>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-top: var(--space-8);">
+        <figure class="chart scroll-entrance" aria-label="Top concept attributions for the melanoma class at features.21">
+          <p class="chart-title">MEL · top concepts at features.21</p>
+          <div class="bar-chart">
+            <div class="bar-row"><span class="bar-label">RS_CO <span class="bar-sub">regression, combinations</span></span><div class="bar-track"><div class="bar-fill" style="--bar-value: 100%"></div></div><span class="bar-value">0.139</span></div>
+            <div class="bar-row"><span class="bar-label">RS_BA <span class="bar-sub">regression, blue areas</span></span><div class="bar-track"><div class="bar-fill" style="--bar-value: 84%"></div></div><span class="bar-value">0.117</span></div>
+            <div class="bar-row"><span class="bar-label">ASYM <span class="bar-sub">asymmetry</span></span><div class="bar-track"><div class="bar-fill" style="--bar-value: 81%"></div></div><span class="bar-value">0.113</span></div>
+            <div class="bar-row"><span class="bar-label">ST_IR <span class="bar-sub">irregular streaks</span></span><div class="bar-track"><div class="bar-fill" style="--bar-value: 78%"></div></div><span class="bar-value">0.109</span></div>
+            <div class="bar-row"><span class="bar-label">COL3 <span class="bar-sub">3+ colours</span></span><div class="bar-track"><div class="bar-fill" style="--bar-value: 63%"></div></div><span class="bar-value">0.087</span></div>
+            <div class="bar-row"><span class="bar-label">PN_AT <span class="bar-sub">atypical network</span></span><div class="bar-track"><div class="bar-fill" style="--bar-value: 60%"></div></div><span class="bar-value">0.084</span></div>
+            <div class="bar-row"><span class="bar-label">VS_R <span class="bar-sub">regular vascular (Mel−)</span></span><div class="bar-track"><div class="bar-fill warn" style="--bar-value: 28%"></div></div><span class="bar-value">0.039</span></div>
+            <div class="bar-row"><span class="bar-label">PIG_R <span class="bar-sub">regular pigment (Mel−)</span></span><div class="bar-track"><div class="bar-fill warn" style="--bar-value: 1%"></div></div><span class="bar-value">0.0003</span></div>
+          </div>
+          <p class="figure-caption">Top tier is uniformly Mel⁺ (regression, asymmetry, irregular structure, chromatic); the two Mel− concepts shown here (highlighted) anchor the bottom of the ranking — a 7.0× separation in mean attribution.</p>
+        </figure>
+        <figure class="chart scroll-entrance" aria-label="Top concept attributions for the nevus class at features.21 — clean polarity inversion">
+          <p class="chart-title">NEV · top concepts at features.21 — same CAVs, target retargeted</p>
+          <div class="bar-chart">
+            <div class="bar-row"><span class="bar-label">DG_R <span class="bar-sub">regular dots &amp; globules</span></span><div class="bar-track"><div class="bar-fill" style="--bar-value: 100%"></div></div><span class="bar-value">0.154</span></div>
+            <div class="bar-row"><span class="bar-label">ST_R <span class="bar-sub">regular streaks</span></span><div class="bar-track"><div class="bar-fill" style="--bar-value: 60%"></div></div><span class="bar-value">0.092</span></div>
+            <div class="bar-row"><span class="bar-label">PIG_R <span class="bar-sub">regular pigmentation</span></span><div class="bar-track"><div class="bar-fill" style="--bar-value: 38%"></div></div><span class="bar-value">0.059</span></div>
+            <div class="bar-row"><span class="bar-label">PN_T <span class="bar-sub">typical pigment network</span></span><div class="bar-track"><div class="bar-fill" style="--bar-value: 14%"></div></div><span class="bar-value">0.021</span></div>
+            <div class="bar-row"><span class="bar-label">RS_BA <span class="bar-sub">regression, blue areas (Mel+)</span></span><div class="bar-track"><div class="bar-fill warn" style="--bar-value: 5%"></div></div><span class="bar-value">0.008</span></div>
+            <div class="bar-row"><span class="bar-label">all other Mel⁺ <span class="bar-sub">collapsed (Mel+)</span></span><div class="bar-track"><div class="bar-fill warn" style="--bar-value: 3%"></div></div><span class="bar-value">&lt; 0.01</span></div>
+          </div>
+          <p class="figure-caption">The top four are <em>exactly</em> the four benign "regular/typical" concepts, in order; every melanoma-indicative concept (highlighted) collapses near zero — ratio 0.03×, the cleanest single validation in the dataset.</p>
+        </figure>
+        <figure class="chart scroll-entrance" aria-label="Top concept attributions for the seborrheic keratosis class at features.21 — flat vocabulary-gap profile">
+          <p class="chart-title">SK · top concepts at features.21 — flat (vocabulary gap)</p>
+          <div class="bar-chart">
+            <div class="bar-row"><span class="bar-label">COL3 <span class="bar-sub">3+ colours</span></span><div class="bar-track"><div class="bar-fill series-c" style="--bar-value: 100%"></div></div><span class="bar-value">0.079</span></div>
+            <div class="bar-row"><span class="bar-label">BWV <span class="bar-sub">blue-whitish veil</span></span><div class="bar-track"><div class="bar-fill series-c" style="--bar-value: 99%"></div></div><span class="bar-value">0.078</span></div>
+            <div class="bar-row"><span class="bar-label">VS_IR <span class="bar-sub">irregular vascular</span></span><div class="bar-track"><div class="bar-fill series-c" style="--bar-value: 81%"></div></div><span class="bar-value">0.064</span></div>
+            <div class="bar-row"><span class="bar-label">ASYM_2AX <span class="bar-sub">two-axis asymmetry</span></span><div class="bar-track"><div class="bar-fill series-c" style="--bar-value: 77%"></div></div><span class="bar-value">0.061</span></div>
+            <div class="bar-row"><span class="bar-label">ASYM <span class="bar-sub">asymmetry</span></span><div class="bar-track"><div class="bar-fill series-c" style="--bar-value: 76%"></div></div><span class="bar-value">0.060</span></div>
+            <div class="bar-row"><span class="bar-label">VS_R <span class="bar-sub">regular vascular</span></span><div class="bar-track"><div class="bar-fill series-c" style="--bar-value: 66%"></div></div><span class="bar-value">0.052</span></div>
+            <div class="bar-row"><span class="bar-label">PIG_R <span class="bar-sub">regular pigmentation</span></span><div class="bar-track"><div class="bar-fill series-c" style="--bar-value: 61%"></div></div><span class="bar-value">0.048</span></div>
+          </div>
+          <p class="figure-caption">No bar stands apart — every value sits within a narrow 0.048–0.079 band, and Mel⁺/Mel⁻ concepts interleave with no separation. Flat is the correct, expected reading: the dictionary has no concept built for keratosis.</p>
+        </figure>
+      </div>
+      <div class="grid-2" style="margin-top: var(--space-8);">
+        <div class="result-card scroll-entrance">
+          <h3>MEL — the melanoma vocabulary lights up</h3>
+          <p>At <code>features.21</code> the ranking is led by <code>RS_CO</code> (regression structures, combinations; mean 0.139, CI [0.108, 0.169]), <code>RS_BA</code> (regression, blue areas; 0.117), <code>ASYM</code> (0.113), <code>ST_IR</code> (irregular streaks; 0.109), <code>COL3</code> (0.087), <code>PN_AT</code> (0.084) and <code>ASYM_2AX</code> (0.081), with <code>VS_IR</code>, <code>DG_IR</code> and <code>BWV</code> following. Every one of the top eight is melanoma-indicative; the five benign concepts (<code>VS_R</code>, <code>RS_WA</code>… down to <code>PIG_R</code> at 0.0003) sit at the bottom. mean(Mel⁺) = 0.080 vs. mean(Mel⁻) = 0.011 → <strong>7.0×</strong>.</p>
+        </div>
+        <div class="result-card scroll-entrance">
+          <h3>NEV — same CAVs, the polarity flips clean</h3>
+          <p>Retarget the identical seventeen CAVs at the nevus logit and the top four become, in order, <code>DG_R</code> (regular dots &amp; globules; 0.154), <code>ST_R</code> (regular streaks; 0.092), <code>PIG_R</code> (regular pigmentation; 0.059) and <code>PN_T</code> (typical pigment network; 0.021) — <em>exactly</em> the four benign "regular/typical" concepts — while every melanoma-indicative concept collapses below 0.01. mean(Mel⁺) = 0.002 vs. mean(Mel⁻) = 0.065 → <strong>0.03×</strong>. Nothing changed except which class index the explainer targets; the ranking inverted on cue.</p>
+        </div>
+        <div class="result-card scroll-entrance">
+          <h3>SK — the expected non-result: a vocabulary gap</h3>
+          <p>For seborrheic keratosis no concept dominates: <code>COL3</code> (0.079), <code>BWV</code> (0.078), <code>VS_IR</code> (0.064), <code>ASYM_2AX</code> (0.061) and <code>ASYM</code> (0.060) sit close together, total attribution mass is 0.58 versus MEL's 1.01, and the Mel⁺/Mel⁻ ratio is a muted 1.8×. This is not a failure of the method — it is the signature of a 17-concept dictionary that was built for melanoma and nevus and simply has no dedicated descriptor for keratosis.</p>
+        </div>
+        <div class="result-card scroll-entrance">
+          <h3>Signal concentrates at the bottleneck</h3>
+          <p>Total attribution mass per class peaks at <code>features.21</code> for MEL (0.659 → 0.256 → 1.013 across .19/.20/.21) and SK (0.190 → 0.271 → 0.584); NEV is more spread (0.243 → 0.409 → 0.351) but its bottleneck ranking is the cleanest of the three. The mass ordering MEL &gt; SK &gt; NEV at <code>features.21</code> traces, almost directly, how well the fixed concept dictionary covers each diagnostic class — a quantitative readout of vocabulary coverage that falls straight out of the attribution statistics, with no extra instrumentation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" data-od-id="visualization" data-progress-label="Local Explanation" data-progress-level="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="section-num">03</p>
+        <h2>One image, seventeen concepts, a sharp local explanation</h2>
+        <p class="section-lede"><code>ISIC_0056726.jpg</code> — true label MEL, predicted MEL with logit 8.99 against SK −4.71 and NEV −6.73 — is explained locally at <code>features.21</code>. Because the local explainer targets the predicted class, the SK and NEV attribution columns are identically zero by construction; only the MEL column carries signal.</p>
+      </div>
+      <figure class="chart scroll-entrance" style="margin-top: var(--space-6);" aria-label="Full per-concept, per-layer Visual-TCAV local explanation grid for ISIC_0056726">
+        <p class="chart-title">Local concept-map grid — all 17 concepts × <code>features.19/20/21</code> (MEL column, ISIC_0056726)</p>
+        <div class="ph-img wide has-image contain">
+          <img src="assets/vmedcav_local_concept_grid_isic_0056726.png" alt="Eighteen-column by three-row grid: input dermoscopic image of ISIC_0056726 plus its Visual-TCAV concept map for each of the 17 derm7pt/PH2 concepts, one row per terminal Inception-C layer (features.19, features.20, features.21); melanoma-indicative concepts show concentrated warm-coloured attribution regions over the lesion, benign concepts render as flat near-zero maps" loading="lazy">
+        </div>
+        <p class="figure-caption">The genuine export behind the ranking below: one row per terminal layer (<code>features.19 → features.21</code>, top to bottom) and one column per concept, each cell showing that concept's spatial attribution map for the predicted MEL class. Reading along the bottleneck row, the melanoma-vocabulary concepts (<code>RS_CO</code>, <code>ASYM</code>, <code>COL3</code>, <code>RS_BA</code>, <code>VS_IR</code>, <code>ST_IR</code> …) light up over the lesion's pale regression areas, irregular border and chromatic zones, while the benign "regular/typical" concepts (<code>PN_T</code>, <code>ST_R</code>, <code>DG_R</code>, <code>PIG_R</code>, <code>PIG_IR</code>) render as flat, near-zero maps — the local, single-image mirror of the global MEL/NEV polarity inversion described above.</p>
+      </figure>
+      <p style="max-width: 70ch; margin-top: var(--space-6); color: var(--fg-2);">Full local ranking at <code>features.21</code> (MEL column): <code>RS_CO 0.314 · ASYM 0.271 · ASYM_2AX 0.240 · COL3 0.232 · RS_BA 0.212 · VS_IR 0.205 · ST_IR 0.192 · PN_AT 0.190 · BWV 0.130 · DG_IR 0.127 · RS_WA 0.101 · VS_R 0.084</code> — then <code>PN_T / ST_R / DG_R / PIG_R / PIG_IR = 0.000</code>. Sharp, concentrated, and dermatologically legible: regression, asymmetry and chromatic complexity dominate; every benign descriptor is silent.</p>
+    </div>
+  </section>
+
+  <section class="section" data-od-id="discussion" data-progress-label="Convergent Validity" data-progress-level="subsection">
+    <div class="container">
+      <div class="discussion-text">
+        <div class="section-head">
+          <p class="section-num">04</p>
+          <h2>A second, independent method says the same thing</h2>
+        </div>
+        <p>The Visual-TCAV global rankings above were corroborated against a methodologically distinct pipeline — standard Captum-based Kim-2018 TCAV, run on the <em>same</em> RECOD Inception-V4, the same 17 concepts, the same three layers and the same three targets, but with a different CAV pool design (a shared label-blind pool, scored by sign-count of the directional derivative, rather than per-concept absent pools scored by spatial mean attribution). Across all 153 (class × layer × concept) cells, with no significance filtering, the two methods' scores correlate at <strong>Pearson 0.49 / Spearman 0.50</strong>, rising to <strong>0.68 for MEL</strong> and <strong>0.63 for NEV</strong> at the decision bottleneck <code>features.21</code> — exactly where the class is read out. Within-context rank agreement (mean per-class-per-layer Spearman over 9 groups) is <strong>ρ ≈ 0.54</strong>, and a binarised "does this concept push the target logit up" test agrees <strong>65%</strong> of the time (100/153 cells).</p>
+        <div class="grid-2" style="margin-top: var(--space-6);">
+          <figure class="chart scroll-entrance" aria-label="Standard-TCAV mean sign-count by concept and class, at the decision bottleneck, coloured by clinical polarity">
+            <p class="chart-title">Standard-TCAV polarity at the bottleneck — mean sign-count per concept, by class</p>
+            <div class="ph-img wide has-image contain">
+              <img src="assets/vmedcav_tcav_signcount_polarity_by_class.png" alt="Three horizontal bar panels (Melanoma, Melanocytic nevus, Seborrheic keratosis) showing each of the 17 concepts' mean TCAV sign-count against a dashed chance line at 0.5, bars coloured red for melanoma-indicative concepts and blue for benign concepts; in the Melanoma panel red bars cluster near 1.0 and blue bars near 0, in the Nevus panel the pattern reverses (blue bars near 1.0, red bars near 0), and in the Seborrheic-keratosis panel both colours sit close together around 0.5–0.7 with no separation" loading="lazy">
+            </div>
+            <p class="figure-caption">The independently-built standard-TCAV pipeline reproduces the same three-class signature from a completely different functional (sign-count of the directional derivative against a shared label-blind pool, instead of spatial mean attribution against per-concept absent pools): clean polarity separation for MEL, a clean inversion for NEV, and an undifferentiated, chance-hugging spread for SK.</p>
+          </figure>
+          <figure class="chart scroll-entrance" aria-label="Scatter plot of pooled agreement between Visual-TCAV and standard-TCAV mean attribution scores across all 153 class by layer by concept cells">
+            <p class="chart-title">Pooled cross-method agreement — Visual-TCAV vs. standard TCAV (n = 153 cells)</p>
+            <div class="ph-img wide has-image contain">
+              <img src="assets/vmedcav_tcav_vtcav_correlation_scatter.png" alt="Scatter plot titled 'Cross-method agreement on global concept rankings', x-axis standard-TCAV mean sign count from 0 to 1, y-axis Visual-TCAV mean attribution from 0 to roughly 0.16, points coloured by class (melanoma red, melanocytic nevus dark blue, seborrheic keratosis light blue) with an annotation box reading 'Pooled (n=153), Pearson r=0.49, Spearman rho=0.50' and a dark-red pooled least-squares fit line trending upward left to right" loading="lazy">
+            </div>
+            <p class="figure-caption">The genuine scatter behind the headline figure: 153 points, one per (class, layer, concept) cell, with a positive least-squares trend and the annotated <strong>Pearson r = 0.49 / Spearman ρ = 0.50</strong> — a moderate, non-trivial pooled correlation between two pipelines that share nothing but the model, the concepts and the layers.</p>
+          </figure>
+        </div>
+        <figure class="chart scroll-entrance" aria-label="Pearson correlation between Visual-TCAV and standard TCAV concept rankings, per class, across the three probed layers">
+          <p class="chart-title">Visual-TCAV ↔ standard-TCAV agreement (Pearson r), by class × layer</p>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-swatch"></span>features.19</span>
+            <span class="legend-item"><span class="legend-swatch series-b"></span>features.20</span>
+            <span class="legend-item"><span class="legend-swatch series-c"></span>features.21 (decision layer)</span>
+          </div>
+          <p class="bar-chart-label">MEL</p>
+          <div class="bar-chart">
+            <div class="bar-row"><span class="bar-label">f.19</span><div class="bar-track"><div class="bar-fill" style="--bar-value: 49.6%"></div></div><span class="bar-value">0.496</span></div>
+            <div class="bar-row"><span class="bar-label">f.20</span><div class="bar-track"><div class="bar-fill series-b" style="--bar-value: 54.7%"></div></div><span class="bar-value">0.547</span></div>
+            <div class="bar-row"><span class="bar-label">f.21</span><div class="bar-track"><div class="bar-fill series-c" style="--bar-value: 68.2%"></div></div><span class="bar-value"><strong>0.682</strong></span></div>
+          </div>
+          <p class="bar-chart-label">SK</p>
+          <div class="bar-chart">
+            <div class="bar-row"><span class="bar-label">f.19</span><div class="bar-track"><div class="bar-fill" style="--bar-value: 75.5%"></div></div><span class="bar-value"><strong>0.755</strong></span></div>
+            <div class="bar-row"><span class="bar-label">f.20</span><div class="bar-track"><div class="bar-fill series-b" style="--bar-value: 58.6%"></div></div><span class="bar-value">0.586</span></div>
+            <div class="bar-row"><span class="bar-label">f.21</span><div class="bar-track"><div class="bar-fill series-c warn" style="--bar-value: 34.1%"></div></div><span class="bar-value">0.341</span></div>
+          </div>
+          <p class="bar-chart-label">NEV</p>
+          <div class="bar-chart">
+            <div class="bar-row"><span class="bar-label">f.19</span><div class="bar-track"><div class="bar-fill warn" style="--bar-value: 20.2%"></div></div><span class="bar-value">0.202</span></div>
+            <div class="bar-row"><span class="bar-label">f.20</span><div class="bar-track"><div class="bar-fill series-b" style="--bar-value: 56.7%"></div></div><span class="bar-value">0.567</span></div>
+            <div class="bar-row"><span class="bar-label">f.21</span><div class="bar-track"><div class="bar-fill series-c" style="--bar-value: 62.8%"></div></div><span class="bar-value"><strong>0.628</strong></span></div>
+          </div>
+          <p class="figure-caption">For MEL and NEV, agreement between the two independently-built pipelines <em>rises monotonically toward the bottleneck</em> — the layer where the class decision is actually read out — peaking at 0.68 and 0.63. SK is the exception: agreement <em>falls</em> toward the bottleneck (0.76 → 0.34, highlighted), the layer-resolved signature of the same vocabulary-gap finding the bar charts above already showed from a different angle.</p>
+        </figure>
+        <table class="ds-table" style="margin-top: var(--space-6);">
+          <thead><tr><th>Class</th><th>Visual-TCAV top-5 (f.21)</th><th>Standard TCAV top-5 (f.21)</th><th class="num-col">Overlap</th></tr></thead>
+          <tbody>
+            <tr><td>MEL</td><td><code>RS_CO, RS_BA, ASYM, ST_IR, COL3</code></td><td><code>RS_CO, RS_BA, ASYM_2AX, ASYM, VS_R</code></td><td class="num-col">3/5</td></tr>
+            <tr><td>SK</td><td><code>COL3, BWV, VS_IR, ASYM_2AX, ASYM</code></td><td><code>ASYM_2AX, RS_WA, COL3, ASYM, VS_R</code></td><td class="num-col">3/5</td></tr>
+            <tr><td>NEV</td><td><code>DG_R, ST_R, PIG_R, PN_T, RS_BA</code></td><td><code>PIG_R, DG_R, PN_T, PN_AT, ST_IR</code></td><td class="num-col">3/5</td></tr>
+          </tbody>
+        </table>
+        <p>The overlapping concepts in every row are exactly the clinically correct families — MEL: regression + asymmetry; NEV: benign regular/typical; SK: PH² chromatic/asymmetry. Two pipelines, built independently, scored on different functionals, with different negative-pool philosophies, recover the <em>same</em> per-class concept structure. That is convergent validity in the textbook sense: the moderate correlation (0.3–0.68, not near 1.0) is itself the right signature — it says the two methods agree on coarse concept-family structure (the part that reflects the model) while disagreeing on fine-grained ranking (the part that reflects each method's own measurement choices). NEV is the cleanest cross-method corroboration — both methods independently push <code>DG_R</code>, <code>PIG_R</code> and <code>PN_T</code> to the top and every melanoma concept to the bottom, the same polarity inversion recovered twice. SK shows the weakest agreement, consistent with it being the vocabulary-gap class where neither method has a strong, layer-stable signal to agree on.</p>
+        <figure class="chart scroll-entrance" style="margin-top: var(--space-6);" aria-label="Heatmap of standard-TCAV polarity correctness across CAV-construction methods, negative-pool sources and probed layers">
+          <p class="chart-title">Standard-TCAV polarity correctness, by CAV method × negative pool × layer</p>
+          <div class="ph-img wide has-image contain">
+            <img src="assets/vmedcav_tcav_polarity_correctness_heatmap.png" alt="Heatmap titled 'Polarity correctness per (cav_method, neg_source, layer)', rows are six combinations of CAV method (centroid, lr, svm) and negative-pool source (derm7pt_random, isic_random), columns are features.19/20/21, cells coloured on a green-to-red scale labelled 'polarity accuracy (sign_count vs label)' and annotated with values; the centroid/derm7pt_random row reads 0.94, 0.65, 0.94, every other cell in the grid is between 0.65 and 0.94, and no cell is coloured red or falls below roughly 0.65" loading="lazy">
+          </div>
+          <p class="figure-caption">A robustness check run before settling on the corroborating pipeline's exact configuration: across every combination of CAV-construction method (centroid, logistic-regression, SVM), negative-pool source (derm7pt vs. ISIC random) and probed layer, sign-count polarity correctness stays in a <strong>0.65–0.94</strong> band — comfortably above the 0.5 chance line everywhere, with <code>centroid + derm7pt_random</code> reaching the top of that band (0.94 at <code>features.19</code> and <code>features.21</code>). That cell is the headline configuration used for the cross-method comparison above.</p>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" data-od-id="conclusion" data-progress-label="Conclusion" data-progress-level="section">
+    <div class="container">
+      <div class="grid-2-1">
+        <div>
+          <div class="section-head">
+            <p class="section-num">05</p>
+            <h2>Conclusion &amp; what carries forward</h2>
+          </div>
+          <div class="discussion-text">
+            <p>V-MedCAV closes the loop the AIXI-Shape / TXUXI controlled benchmark opened. Every methodological choice that the synthetic experiments identified as load-bearing — a CAV classifier validated above chance, a negative pool matched to the concept's own absence rather than to a generic "not this" notion, the penultimate-layer sweet spot, GAP-space CAV construction, and a contrastive (CSS-style) reading of signed attributions rather than raw absolute magnitude — reappears here as the difference between an explainer that smears attribution across all seventeen concepts and one that reproduces, cleanly and reproducibly, the dermatological literature's own account of what each diagnosis looks like.</p>
+            <figure class="chart scroll-entrance" aria-label="Bar charts comparing concept-versus-anti-concept polarity separation under GAP pooling and flattened activations, on AIXI and TXUXI, across three CAV methods">
+              <p class="chart-title">Why GAP-space: polarity separation under GAP vs. flattened activations (AIXI / TXUXI)</p>
+              <div class="ph-img wide has-image contain">
+                <img src="assets/vmedcav_gap_vs_flat_polarity_separation.png" alt="Four bar-chart panels titled 'GAP separates polarity (concept minus below 0); Flatten collapses it (both above 0)': top row 'AIXI · GAP' and 'TXUXI · GAP' show, for centroid/lr/svm CAV methods, mean signed score positive for concept-plus and negative for concept-minus (clean separation either side of zero); bottom row 'AIXI · Flatten' and 'TXUXI · Flatten' show both concept-plus and concept-minus bars positive and close in height for every method (no separation, both above zero)" loading="lazy">
+              </div>
+              <p class="figure-caption">The AIXI / TXUXI evidence behind the "GAP-space CAV construction" choice that V-MedCAV inherits: pooling activations to a global-average-pooled vector before building the CAV produces a clean positive/negative split between matching and anti-concepts (top row, every method, both datasets), while flattening the same activations collapses both groups onto the positive side with no separation (bottom row) — a property of the representation, not of any one CAV method, that would silently wash out exactly the polarity-inversion signal the dermatological explainer above depends on.</p>
+            </figure>
+            <p>The headline results are threefold and mutually reinforcing: (1) for MEL, the melanoma-indicative concept families dominate the benign ones by 7.0× at the bottleneck; (2) retargeting the <em>identical</em> CAVs at NEV inverts that ranking cleanly (0.03×) — the strongest single piece of evidence that the attributions track the model's decision boundary rather than an artefact of the pool; and (3) SK's flat, low attribution profile is correctly diagnosed as a vocabulary-coverage gap rather than misreported as a finding. A second, independently-built TCAV pipeline corroborates all three stories at the per-class concept-family level (pooled ρ ≈ 0.50, rising to 0.68 at the decision layer for MEL).</p>
+            <p>What remains open mirrors the gaps the controlled benchmark already flagged: a 17-concept dictionary that does not cover every diagnostic class (SK), the absence of a formal null-distribution significance test for "is concept X used by class Y" claims, and the question of whether a richer, SK-aware concept vocabulary would close the vocabulary gap or simply relocate it. Those are the natural next steps for turning this explainer from a research instrument into a clinical audit tool.</p>
+          </div>
+        </div>
+        <div class="ph-img portrait" aria-label="Summary of the V-MedCAV findings">
+          [ MEL 7.0× → NEV 0.03× → SK 1.8× · same CAVs, three targets, one coherent story ]
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" data-od-id="cta-final" data-progress-label="Next Steps" data-progress-level="subsection">
+    <div class="container" style="text-align: center;">
+      <div style="max-width: 600px; margin: 0 auto;">
+        <p class="eyebrow">EXPLORE THE FULL STUDY</p>
+        <h2>Review the complete research</h2>
+        <p class="lead" style="margin: var(--space-4) auto var(--space-6);">The full study runs from the survey of concept-based explainability, through the controlled AIXI-Shape / TXUXI validation where every methodological choice was stress-tested against ground truth, to this real clinical deployment on the RECOD Inception-V4 melanoma classifier.</p>
+        <div class="hero-cta" style="justify-content: center;">
+          <a href="index.html" class="btn btn-primary">Back to overview</a>
+          <a href="state-of-the-art.html" class="btn btn-secondary btn-arrow">State of the Art</a>
+          <a href="aixi-txuxi.html" class="btn btn-secondary btn-arrow">Aixi &amp; Txuxi</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ─── Lightbox ────────────────────────────────────────────── -->
+<div class="lb-backdrop" id="lightbox" role="dialog" aria-modal="true" aria-label="Image expanded view">
+  <button class="lb-close" aria-label="Close">✕</button>
+  <div class="lb-img-wrap">
+    <img class="lb-img" alt="">
+  </div>
+  <div class="lb-caption"></div>
+  <div class="lb-zoom-hint">Click image to zoom · scroll to pan</div>
+</div>
+
+<footer class="pagefoot">
+  <div class="container row-between">
+    <span>ML/XAI Research · 2026</span>
+    <span class="meta">V-Medcav</span>
+  </div>
+</footer>
+
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="index.html">Home</a>
+    <a href="landing.html">Introduction</a>
+    <a href="state-of-the-art.html">State of the Art</a>
+    <a href="aixi-txuxi.html">Aixi &amp; Txuxi</a>
+    <a href="v-medcav.html" class="active">V-Medcav</a>
+  </div>
+</nav>
+
+<div class="progress-line" id="progressLine"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var sections = document.querySelectorAll('section[data-od-id]');
+  var line = document.getElementById('progressLine');
+  var inner = document.createElement('div'); inner.className = 'progress-inner';
+  var wrap = document.createElement('div'); wrap.className = 'progress-track-wrap';
+  var track = document.createElement('div'); track.className = 'progress-track';
+  var fill = document.createElement('div'); fill.className = 'progress-fill';
+  track.appendChild(fill); wrap.appendChild(track);
+  var nodesWrap = document.createElement('div'); nodesWrap.className = 'progress-nodes';
+  var nodeData = [];
+  sections.forEach(function(s, i) {
+    var label = s.getAttribute('data-progress-label') || 'Section ' + (i + 1);
+    var level = s.getAttribute('data-progress-level') || 'subsection';
+    var n = document.createElement('div');
+    n.className = 'progress-node ' + level;
+    var tip = document.createElement('span'); tip.className = 'progress-tooltip'; tip.textContent = label;
+    n.appendChild(tip);
+    n.addEventListener('click', function() { var r = s.getBoundingClientRect(); window.scrollTo({ top: window.scrollY + r.top - 80, behavior: 'smooth' }); });
+    nodesWrap.appendChild(n);
+    nodeData.push({ el: n, section: s });
+  });
+  wrap.appendChild(nodesWrap); inner.appendChild(wrap);
+  line.appendChild(inner);
+
+  function updateProgress() {
+    var docH = document.documentElement.scrollHeight - window.innerHeight;
+    var progress = docH > 0 ? window.scrollY / docH : 0;
+    fill.style.width = Math.min(progress * 100, 100) + '%';
+    var first = sections[0], last = sections[sections.length - 1];
+    var totalSpan = last.offsetTop - first.offsetTop;
+    nodeData.forEach(function(d) {
+      var p = totalSpan > 0 ? (d.section.offsetTop - first.offsetTop) / totalSpan : 0;
+      d.el.style.left = (p * 100) + '%';
+      d.el.classList.toggle('filled', p <= progress);
+    });
+  }
+  window.addEventListener('scroll', updateProgress);
+  window.addEventListener('resize', updateProgress);
+  updateProgress();
+
+  var scrollEls = document.querySelectorAll('.scroll-entrance');
+  var scrollObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); scrollObs.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  scrollEls.forEach(function(el) { scrollObs.observe(el); });
+
+  /* ─── Lightbox ───────────────────────────────────────────── */
+  var lb = document.getElementById('lightbox');
+  var lbImg = lb.querySelector('.lb-img');
+  var lbCap = lb.querySelector('.lb-caption');
+  var lbHint = lb.querySelector('.lb-zoom-hint');
+  var triggerImgs = document.querySelectorAll('.ph-img img, .ph-img.has-image img, figure.chart img');
+  triggerImgs.forEach(function(img) {
+    img.addEventListener('click', function(e) {
+      e.stopPropagation();
+      lbImg.src = this.src;
+      lbImg.alt = this.alt;
+      lbImg.classList.remove('zoomed');
+      lbHint.classList.remove('hidden');
+      var fig = this.closest('figure');
+      var caption = fig ? fig.querySelector('.figure-caption') : null;
+      lbCap.textContent = caption ? caption.textContent : '';
+      lb.classList.add('open');
+      lb.scrollTop = 0;
+      document.body.style.overflow = 'hidden';
+    });
+  });
+  lbImg.addEventListener('click', function(e) {
+    e.stopPropagation();
+    this.classList.toggle('zoomed');
+    lbHint.classList.add('hidden');
+  });
+  function closeLb() {
+    lb.classList.remove('open');
+    lbImg.classList.remove('zoomed');
+    document.body.style.overflow = '';
+  }
+  lb.querySelector('.lb-close').addEventListener('click', closeLb);
+  lb.addEventListener('click', function(e) { if (e.target === this) closeLb(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && lb.classList.contains('open')) closeLb(); });
+});
+</script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '$', right: '$', display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+# Non-website files
+Pagina-TFG.zip
+*.sketch.json
+*.artifact.json
+DESIGN-HANDOFF.md
+DESIGN-MANIFEST.json
+.vscode/
+.od-skills/
+.DS_Store

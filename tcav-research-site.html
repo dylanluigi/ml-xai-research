@@ -1,0 +1,141 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ML/XAI Research · Interpretability Methods</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .page-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-6); margin-top: var(--space-8); }
+    .page-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-7);
+      transition: box-shadow var(--motion-base) var(--ease-standard);
+      position: relative;
+    }
+    .page-card:hover { box-shadow: var(--elev-raised); }
+    .page-card h3 { margin-bottom: var(--space-2); }
+    .page-card p { color: var(--muted); font-size: 14px; margin-bottom: var(--space-4); }
+    .page-card .page-num {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--accent);
+      letter-spacing: var(--tracking-eyebrow);
+      margin-bottom: var(--space-3);
+    }
+    .page-card a::after { content: ''; position: absolute; inset: 0; }
+    @media (max-width: 768px) { .page-grid { grid-template-columns: 1fr; } }
+    .hero-sub {
+      font-family: var(--font-display);
+      font-size: var(--text-md);
+      color: var(--muted);
+      max-width: 48ch;
+      margin: var(--space-5) auto;
+      line-height: var(--leading-body);
+    }
+  </style>
+</head>
+<body>
+
+<main>
+  <section class="section hero" data-od-id="hero">
+    <div class="container hero-center">
+      <p class="eyebrow">INTERPRETABILITY · 2026</p>
+      <h1>Concept-Based Explanations for Neural Network Decisions</h1>
+      <p class="hero-sub">A visual exploration of TCAV, Visual-TCAV, and related attribution methods for understanding what deep learning models actually see and rely on when making predictions.</p>
+      <div class="hero-cta">
+        <a href="landing.html" class="btn btn-primary btn-arrow">Introduction</a>
+        <a href="state-of-the-art.html" class="btn btn-secondary btn-arrow">State of the Art</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" data-od-id="pages">
+    <div class="container">
+      <div class="section-head">
+        <p class="section-num">01 — 04</p>
+        <h2>Research sections</h2>
+      </div>
+      <div class="page-grid">
+        <div class="page-card scroll-entrance">
+          <p class="page-num">01</p>
+          <h3>Introduction</h3>
+          <p>Motivation, background, and the interpretability problem in modern computer vision. Covers the high-level goals of concept-based explanation methods.</p>
+          <a href="landing.html" class="btn btn-ghost btn-arrow">Open</a>
+        </div>
+        <div class="page-card scroll-entrance">
+          <p class="page-num">02</p>
+          <h3>State of the Art</h3>
+          <p>A survey of existing interpretability techniques — TCAV, Visual-TCAV, integrated gradients, LIME, and related approaches with comparative analysis.</p>
+          <a href="state-of-the-art.html" class="btn btn-ghost btn-arrow">Open</a>
+        </div>
+        <div class="page-card scroll-entrance">
+          <p class="page-num">03</p>
+          <h3>Aixi &amp; Txuxi Experiments</h3>
+          <p>Experimental methodology, TCAV score computations, concept sensitivity analysis, and statistical validation across multiple model architectures.</p>
+          <a href="aixi-txuxi.html" class="btn btn-ghost btn-arrow">Open</a>
+        </div>
+        <div class="page-card scroll-entrance">
+          <p class="page-num">04</p>
+          <h3>V-Medcav</h3>
+          <p>Visual-Medium Explanation through Concept Activation Vectors — a novel framework for bridging visual concept attribution with medium-specific model analysis.</p>
+          <a href="v-medcav.html" class="btn btn-ghost btn-arrow">Open</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" data-od-id="abstract">
+    <div class="container" style="max-width: 720px;">
+      <div class="section-head">
+        <p class="section-num">Overview</p>
+        <h2>Project abstract</h2>
+      </div>
+      <p style="font-size: var(--text-md); line-height: var(--leading-body); color: var(--fg-2);">
+        Understanding the internal representations of deep neural networks remains one of the central challenges in machine learning research. This project explores <em>concept-based interpretability</em> methods — specifically Testing with Concept Activation Vectors (TCAV) and its visual extension Visual-TCAV — to quantify how specific human-interpretable concepts influence model predictions.
+      </p>
+      <p style="margin-top: var(--space-5); color: var(--muted);">
+        Through systematic experimentation and analysis, we evaluate the sensitivity, specificity, and reliability of concept attribution across diverse model architectures and datasets. The findings presented here contribute to the broader goal of making neural network decisions more transparent, auditable, and trustworthy.
+      </p>
+      <div style="margin-top: var(--space-6); display: flex; gap: var(--space-3); flex-wrap: wrap;">
+        <span class="tag-chip">TCAV</span>
+        <span class="tag-chip">Concept Attribution</span>
+        <span class="tag-chip">Explainable AI</span>
+        <span class="tag-chip">Visual Interpretability</span>
+        <span class="tag-chip">Deep Learning</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="pagefoot">
+  <div class="container row-between">
+    <span>ML/XAI Research · 2026</span>
+    <span class="meta">Interpretability methods for neural network analysis</span>
+  </div>
+</footer>
+
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="index.html" class="active">Home</a>
+    <a href="landing.html">Introduction</a>
+    <a href="state-of-the-art.html">State of the Art</a>
+    <a href="aixi-txuxi.html">Aixi &amp; Txuxi</a>
+    <a href="v-medcav.html">V-Medcav</a>
+  </div>
+</nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var els = document.querySelectorAll('.scroll-entrance');
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function(el) { obs.observe(el); });
+});
+</script>
+</body>
+</html>
