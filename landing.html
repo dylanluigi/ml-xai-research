@@ -5,332 +5,210 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Introduction · ML/XAI Research</title>
   <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR2fCJ6r82NK1S4Skgr8G2H6s7pLtT1e9GBBDE1BmkCwSj2x" crossorigin="anonymous" />
-  <style>
-    /* ── hero canvas full-bleed ── */
-    .hero-canvas-wrap {
-      position: relative;
-      min-height: clamp(520px, 90vh, 700px);
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      overflow: hidden;
-      background: var(--bg);
-      margin-bottom: 0;
-    }
-    #heroCanvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-      pointer-events: auto;
-      z-index: 0;
-    }
-    .hero-canvas-wrap .hero-content {
-      position: relative;
-      z-index: 2;
-      grid-column: 1 / 2;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: clamp(64px, 10vw, 140px) var(--container-gutter);
-      pointer-events: none;
-    }
-    .hero-canvas-wrap .hero-content * { pointer-events: auto; }
-    .hero-canvas-wrap .hero-content .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent);
-      padding: 5px 12px 5px 10px;
-      border: 1px solid color-mix(in oklch, var(--accent) 20%, transparent);
-      border-radius: 100px;
-      width: fit-content;
-      margin-bottom: var(--space-6);
-      background: color-mix(in oklch, var(--accent) 6%, var(--bg));
-    }
-    .hero-canvas-wrap .hero-content .hero-badge .dot {
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: pulse-dot 2s ease-in-out infinite;
-    }
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.7); }
-    }
-    .hero-canvas-wrap .hero-content h1 {
-      font-size: clamp(40px, 4.6vw, 68px);
-      max-width: 14ch;
-      margin-bottom: var(--space-5);
-    }
-    .hero-canvas-wrap .hero-content .hero-lead {
-      font-family: var(--font-display);
-      font-size: clamp(15px, 1.2vw, 17px);
-      line-height: var(--leading-body);
-      color: var(--muted);
-      max-width: 54ch;
-      margin-bottom: var(--space-7);
-    }
-    .hero-canvas-wrap .hero-visual-side {
-      position: relative;
-      z-index: 2;
-      grid-column: 2 / 3;
-      display: grid;
-      place-items: center;
-      padding: var(--container-gutter);
-    }
-    .hero-visual-card {
-      position: relative;
-      width: 100%;
-      max-width: 380px;
-      aspect-ratio: 1 / 1;
-      border-radius: 16px;
-      background: color-mix(in oklch, var(--surface) 70%, transparent);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
-      box-shadow: var(--elev-raised);
-      display: grid;
-      place-items: center;
-      padding: var(--space-8);
-    }
-    .hero-visual-card-inner {
-      text-align: center;
-    }
-    .activation-ring {
-      width: 120px; height: 120px;
-      margin: 0 auto var(--space-5);
-      position: relative;
-      border-radius: 50%;
-      border: 1.5px solid color-mix(in oklch, var(--accent) 20%, transparent);
-      display: grid;
-      place-items: center;
-    }
-    .activation-ring::before {
-      content: '';
-      position: absolute;
-      width: 80px; height: 80px;
-      border-radius: 50%;
-      border: 1px solid color-mix(in oklch, var(--accent) 35%, transparent);
-    }
-    .activation-ring::after {
-      content: '';
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      background: color-mix(in oklch, var(--accent) 15%, var(--bg));
-      border: 1px solid color-mix(in oklch, var(--accent) 25%, transparent);
-    }
-    .activation-ring .ring-orb {
-      position: absolute;
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      top: 50%; left: 50%;
-      animation: orbit 4s linear infinite;
-      transform-origin: 0 0;
-      transform: translate(-50%, -50%);
-    }
-    @keyframes orbit {
-      from { transform: translate(-50%, -50%) rotate(0deg) translateX(60px); }
-      to   { transform: translate(-50%, -50%) rotate(360deg) translateX(60px); }
-    }
-    .hero-visual-card .vis-label {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--meta);
-      letter-spacing: 0.04em;
-      line-height: 1.5;
-      margin-top: var(--space-3);
-    }
-    @media (max-width: 820px) {
-      .hero-canvas-wrap { grid-template-columns: 1fr; min-height: auto; }
-      .hero-canvas-wrap .hero-visual-side { grid-column: 1 / 2; padding: 0 var(--container-gutter) var(--space-8); }
-      .hero-canvas-wrap .hero-content { padding-bottom: var(--space-6); }
-      .hero-visual-card { max-width: 280px; }
-    }
-
-    /* ── load entrance animations ── */
-    .hero-canvas-wrap .hero-content > * {
-      opacity: 0;
-      transform: translateY(24px);
-      animation: hero-in 0.6s cubic-bezier(0.16, 1, 0.2, 1) forwards;
-    }
-    .hero-canvas-wrap .hero-content > *:nth-child(1) { animation-delay: 0.1s; }
-    .hero-canvas-wrap .hero-content > *:nth-child(2) { animation-delay: 0.25s; }
-    .hero-canvas-wrap .hero-content > *:nth-child(3) { animation-delay: 0.4s; }
-    .hero-canvas-wrap .hero-content > *:nth-child(4) { animation-delay: 0.55s; }
-    .hero-visual-card {
-      opacity: 0;
-      transform: translateY(30px) scale(0.96);
-      animation: hero-in-card 0.8s cubic-bezier(0.16, 1, 0.2, 1) 0.35s forwards;
-    }
-    @keyframes hero-in {
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes hero-in-card {
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    /* ── enhanced scroll entrance ── */
-    .scroll-up {
-      opacity: 0;
-      transform: translateY(40px);
-      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.2, 1),
-                  transform 0.7s cubic-bezier(0.16, 1, 0.2, 1);
-    }
-    .scroll-up.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .scroll-up.delay-1 { transition-delay: 0.05s; }
-    .scroll-up.delay-2 { transition-delay: 0.15s; }
-    .scroll-up.delay-3 { transition-delay: 0.25s; }
-    @media (prefers-reduced-motion: reduce) {
-      .scroll-up { opacity: 1; transform: none; transition: none; }
-      .hero-canvas-wrap .hero-content > * { opacity: 1; transform: none; animation: none; }
-      .hero-visual-card { opacity: 1; transform: none; animation: none; }
-    }
-
-    .intro-block { max-width: 680px; }
-    .intro-block p { margin-bottom: var(--space-5); color: var(--fg-2); }
-    .objective-list { list-style: none; padding: 0; }
-    .objective-list li { position: relative; padding-left: 20px; margin-bottom: var(--space-3); color: var(--fg-2); }
-    .objective-list li::before { content: '\2013'; position: absolute; left: 0; color: var(--accent); }
-
-    .section-head-narrow {
-      max-width: 620px;
-    }
-  </style>
+  <link rel="stylesheet" href="vendor/katex/katex.min.css" />
+  <script defer src="vendor/katex/katex.min.js"></script>
+  <script defer src="vendor/katex/auto-render.min.js"></script>
+  <script defer src="js/site.js"></script>
+  <script defer src="js/visuals.js"></script>
+  <script defer src="js/figures.js"></script>
 </head>
 <body>
 
-<main>
-  <section data-od-id="hero" data-progress-label="Introduction" data-progress-level="section">
-    <div class="hero-canvas-wrap">
-      <canvas id="heroCanvas"></canvas>
-      <div class="hero-content">
-        <div class="hero-badge">
-          <span class="dot"></span>
-          Interpreting neural representations
-        </div>
-        <h1>Why Concept-Based Interpretability Matters</h1>
-        <p class="hero-lead">As neural networks grow in capability, understanding <em>how</em> they reach decisions becomes critical for trust, debugging, and safety. Concept-based attribution offers a human-interpretable window into model reasoning.</p>
-        <div class="hero-cta">
-          <a href="#motivation" class="btn btn-primary btn-arrow">Read more</a>
-          <a href="state-of-the-art.html" class="btn btn-secondary btn-arrow">State of the Art</a>
-        </div>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topnav">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="index.html">ML/XAI Research</a>
+    <nav aria-label="Primary">
+      <ul class="topnav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="landing.html" aria-current="page">Introduction</a></li>
+        <li><a href="state-of-the-art.html">State of the Art</a></li>
+        <li><a href="aixi-txuxi.html">Aixi &amp; Txuxi</a></li>
+        <li><a href="v-medcav.html">V-Medcav</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero-wide" data-od-id="hero" data-progress-label="Introduction" data-progress-level="section">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-content">
+      <p class="eyebrow eyebrow--accent reveal">Chapter 1 · Introduction</p>
+      <h1 class="reveal delay-1">Why Concept-Based Explainability Matters</h1>
+      <p class="lead reveal delay-2">Modern deep learning architectures achieve remarkable predictive performance, yet their internal reasoning remains largely opaque, creating a growing and structural tension between capability and accountability.</p>
+      <div class="hero-cta reveal delay-3">
+        <a href="#motivation" class="btn btn-primary btn-arrow">Read more</a>
+        <a href="#objectives" class="btn btn-secondary btn-arrow">Objectives</a>
       </div>
-      <div class="hero-visual-side">
-        <div class="hero-visual-card">
-          <div class="hero-visual-card-inner">
-            <div class="activation-ring"><div class="ring-orb"></div></div>
-            <div class="vis-label">Concept activation<br />space visualization</div>
-          </div>
-        </div>
+    </div>
+    <div class="hero-visual reveal delay-2">
+      <div class="hero-visual-inner">
+        <div class="viz" data-visual="concept-space" role="group" aria-label="Concept activation space at layer l: activations of random images and of concept images such as striped are separated by a linear boundary, the CAV points from the random centroid toward the concept centroid, and the gradients of five zebra inputs are tested against it to give the TCAV score. Use the buttons to switch between striped, zigzagged and dotted."></div>
+        <p class="vis-label">Concept activation space: is the zebra class sensitive to “striped”?<br />Illustrative example after Kim et al. (2018)</p>
       </div>
     </div>
   </section>
 
-  <section class="section" data-od-id="motivation" data-progress-label="Motivation &amp; Background" data-progress-level="section" id="motivation">
+  <section class="section" data-od-id="motivation" data-progress-label="Motivation" data-progress-level="section" id="motivation">
     <div class="container">
-      <div class="grid-2-1">
-        <div class="intro-block scroll-up">
-          <div class="section-head">
-            <p class="section-num">01</p>
-            <h2>Motivation &amp; background</h2>
-            <p class="section-lede">Deep neural networks achieve remarkable performance across vision, language, and multimodal tasks — yet their internal representations remain largely opaque.</p>
-          </div>
-          <p>Standard evaluation metrics (accuracy, precision, recall) measure task performance but provide no insight into the <em>reasons</em> behind a model's output. This lack of transparency poses risks in high-stakes domains: medical diagnosis, autonomous vehicles, credit scoring, and legal decision support.</p>
-          <p>Concept-based interpretability methods address this gap by measuring how strongly a model's predictions correlate with human-interpretable concepts — stripes, texture, color, shape — without requiring access to the model's training data or internal weights.</p>
+      <div class="prose reveal">
+        <div class="section-head">
+          <p class="section-num">01</p>
+          <h2>Capability versus accountability</h2>
+          <p class="section-lede">Deep learning systems are spreading across high-stakes domains, including medical image analysis, financial decision-making, autonomous systems and judicial sentencing assistance, which makes it increasingly necessary to understand their internal workings.</p>
         </div>
-        <div class="ph-img square scroll-up delay-1" aria-label="Concept attribution diagram placeholder">
-          [ Concept attribution diagram ]
+        <p>The field of Explainable Artificial Intelligence (XAI) emerges from the need to reconcile this tension. The absence of interpretability not only undermines user trust, but also impedes regulatory compliance, hinders model auditing, and limits the ability of practitioners to diagnose and correct systematic model failures.</p>
+        <p>Over the past decade the XAI community has converged around two principal schools of thought, ante-hoc and post-hoc explainability. Given the structural limitations of ante-hoc approaches, a significant proportion of contemporary research is directed toward post-hoc methodologies.</p>
+      </div>
+      <div class="grid-2">
+        <div class="card reveal delay-1">
+          <h3>Ante-hoc explainability</h3>
+          <p>Interpretability is a structural property of the model itself, achieved through constrained choices such as linear models, decision trees or human-readable attention mechanisms. Transparency by design tends to reduce representational capacity.</p>
+        </div>
+        <div class="card reveal delay-2">
+          <h3>Post-hoc explainability</h3>
+          <p>The trained model is treated as a fixed black box and external techniques approximate, attribute or decompose its behaviour after training. Its explanations are inherently approximate, and their fidelity is neither guaranteed nor always verifiable.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section" data-od-id="tcav-overview" data-progress-label="What is TCAV?" data-progress-level="subsection">
+  <section class="section" data-od-id="landscape" data-progress-label="Post-hoc Landscape" data-progress-level="subsection" id="landscape">
     <div class="container">
-      <div class="grid-1-2">
-        <div class="ph-img scroll-up" aria-label="TCAV overview diagram placeholder">
-          [ TCAV overview diagram ]
+      <div class="section-head section-head--narrow reveal">
+        <p class="section-num">02</p>
+        <h2>The post-hoc landscape</h2>
+        <p class="section-lede">Post-hoc techniques follow a progression from input-level attribution to high-level semantic reasoning. Local methods explain individual predictions; global methods characterise behaviour across an entire class or dataset. Concept-based methods support both.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card reveal delay-1">
+          <h3>Perturbation-based</h3>
+          <p>Alter, mask or remove input features and observe the change in output, treating the model as a strict black box. LIME and SHAP exemplify this, at the cost of many forward passes.</p>
         </div>
-        <div class="scroll-up delay-1">
-          <div class="section-head">
-            <p class="section-num">02</p>
-            <h2>What is TCAV?</h2>
-          </div>
-          <p>Testing with Concept Activation Vectors (TCAV) quantifies the importance of a user-defined concept to a model's predictions. The core idea is elegant: collect examples of a concept (striped images) and non-examples, train a binary linear classifier in the model's activation space, and measure how often changes in the concept direction affect predictions.</p>
-          <p>The TCAV score for a concept <var>C</var> with respect to class <var>k</var> is defined as:</p>
-          <div class="math-block">
-            $$ \text{TCAV}_{C,k} = \frac{|\{ x \in X_k : S_{C,k}(x) > 0 \}|}{|X_k|} $$
-          </div>
-          <p style="margin-top: var(--space-4);">where <var>S<sub>C,k</sub></var>(<var>x</var>) measures the directional derivative of the model's prediction along the concept activation vector at layer <var>l</var>.</p>
+        <div class="card reveal delay-2">
+          <h3>CAM-based</h3>
+          <p>Project the final classification weights onto the last convolutional feature maps. Grad-CAM replaces the learned GAP weights with the gradient of the class logit.</p>
+        </div>
+        <div class="card reveal delay-3">
+          <h3>Back-propagation</h3>
+          <p>Compute the gradient of the output with respect to the input, giving pixel-wise saliency maps. Integrated Gradients addresses gradient saturation along a path from a baseline.</p>
+        </div>
+        <div class="card reveal delay-1">
+          <h3>Explanation by example</h3>
+          <p>Justify a decision by retrieving the most similar or influential training instances, leveraging the human tendency to reason by analogy and precedent.</p>
+        </div>
+        <div class="card reveal delay-2">
+          <h3>Textual explanations</h3>
+          <p>Translate model decisions into natural language, often with secondary or generative models, producing human-readable rationales alongside the prediction.</p>
+        </div>
+        <div class="card reveal delay-3">
+          <h3>Concept-based</h3>
+          <p>Elevate interpretability from pixels or tokens to semantic ideas, such as recognising the abstract concept of a “wheel” rather than a gradient of edge-detecting pixels.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section" data-od-id="objectives" data-progress-label="Research Objectives" data-progress-level="subsection">
-    <div class="container" style="max-width: 720px;">
-      <div class="section-head section-head-narrow scroll-up">
-        <p class="section-num">03</p>
-        <h2>Research objectives</h2>
-        <p class="section-lede">Three core questions guide our experimental work across TCAV, Visual-TCAV, and related attribution frameworks.</p>
+  <section class="section" data-od-id="bridge" data-progress-label="A Bridge to Reasoning" data-progress-level="section" id="bridge">
+    <div class="container container--narrow">
+      <div class="prose reveal">
+        <div class="section-head">
+          <p class="section-num">03</p>
+          <h2>A bridge between reasoning</h2>
+          <p class="section-lede">Feature attribution remains trapped at the precision of the input. A pixel-level explanation may highlight a diffuse region as important, but it cannot say whether the model used a texture, a geometric pattern, or an incidental background correlation.</p>
+        </div>
+        <p>Kim et al. formalise this mismatch as a relationship between two vector spaces. The state of a model is a vector space $E_m$ spanned by basis vectors $e_m$ that correspond to input features and neural activations. Humans work in a different space $E_h$, spanned by implicit vectors $e_h$ that correspond to human-interpretable concepts. A dermatologist does not reason in pixel intensities but in the presence or absence of pigment networks, vascular patterns, regression areas and globules. An interpretation of a model is then a function:</p>
+        <div class="math-block">
+          $$ g : E_m \to E_h $$
+        </div>
+        <p>The function $g$ need not be perfect. Its assumption of linearity draws on evidence from linear probing, network dissection and latent-space geometry that concepts are, at least locally and approximately, encoded as linear directions. Concept-based methods exploit this linearity by defining concepts through sets of example inputs: to define “striped texture”, a collection of images showing stripes is sufficient, which opens the process to domain experts without technical fluency.</p>
       </div>
-      <ul class="objective-list">
-        <li class="scroll-up delay-1"><strong>Sensitivity analysis</strong> — How robust are concept attribution scores to choice of layer, concept definition, and model architecture?</li>
-        <li class="scroll-up delay-2"><strong>Comparative evaluation</strong> — How does TCAV's concept attribution compare with gradient-based and perturbation-based attribution methods in terms of consistency and interpretability?</li>
-        <li class="scroll-up delay-3"><strong>Visual extension</strong> — Can Visual-TCAV's per-pixel concept attributions provide more actionable insights than global TCAV scores while maintaining statistical reliability?</li>
+      <div class="grid-2 reveal">
+        <div class="card card-flat">
+          <p class="method-label">Saliency methods ask</p>
+          <h3>“Which pixels contributed to this prediction?”</h3>
+          <p>Local and input-specific: a different map for each image, with no principled way to aggregate across instances.</p>
+        </div>
+        <div class="card card-flat">
+          <p class="method-label">Concept-based methods ask</p>
+          <h3>“To what extent did the model rely on a human-understandable property?”</h3>
+          <p>Global and class-level: whether predictions for a whole class are systematically sensitive to a concept, exposing biases, shortcuts and spurious correlations.</p>
+        </div>
+      </div>
+      <div class="prose reveal">
+        <p>Two methods instantiate this framework. TCAV operationalises $g$ by training a linear classifier, a Concept Activation Vector, to separate the activations of concept examples from those of random counterexamples, then measures the directional sensitivity of the output along that vector. Visual-TCAV projects the concept vector back onto the spatial activation maps, showing not only whether a concept was used, but where the network detected it. Together they form the analytical backbone of this work.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" data-od-id="images" data-progress-label="Why Images" data-progress-level="subsection" id="images">
+    <div class="container container--narrow">
+      <div class="prose reveal">
+        <div class="section-head">
+          <p class="section-num">04</p>
+          <h2>Images and explainability</h2>
+          <p class="section-lede">Images are simultaneously high-dimensional, spatially structured and amenable to human visual inspection: computationally complex yet perceptually immediate.</p>
+        </div>
+        <p>CNNs exploit this spatial structure through hierarchical convolutional filters. Early layers respond to edges, corners and colour gradients, while deeper layers compose them into detectors for textures, object parts and semantic categories. This hierarchy is what makes CNNs effective, and also what makes them difficult to interpret, as learned representations become progressively more entangled.</p>
+        <p>Image classification is therefore a natural setting for concept-based explainability: representations can be inspected at several levels of abstraction while the images remain directly accessible to human judgement.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" data-od-id="objectives" data-progress-label="Objectives" data-progress-level="section" id="objectives">
+    <div class="container container--narrow">
+      <div class="section-head reveal">
+        <p class="section-num">05</p>
+        <h2>Objectives</h2>
+        <p class="section-lede">This final degree project evaluates the methodological validity and practical applicability of TCAV and Visual-TCAV for interpreting convolutional neural networks, using a two-phase experimental setup.</p>
+      </div>
+      <ul class="dash-list">
+        <li class="reveal delay-1"><strong>Controlled validation.</strong> Validate both methods under synthetic conditions with known ground truth, on the AIXI-Shape and TXUXI datasets (Chapter 3).</li>
+        <li class="reveal delay-2"><strong>Clinical application.</strong> Apply them to a real-world dermoscopic skin lesion classification task, as V-MedCAV (Chapter 4).</li>
       </ul>
     </div>
   </section>
 
-  <section class="section" data-od-id="methodology" data-progress-label="Methodology" data-progress-level="section">
+  <section class="section" data-od-id="structure" data-progress-label="Structure" data-progress-level="subsection" id="structure">
     <div class="container">
-      <div class="section-head scroll-up" style="text-align: center; max-width: 40ch; margin-inline: auto;">
-        <p class="section-num">04</p>
-        <h2>Methodology overview</h2>
+      <div class="section-head section-head--center reveal">
+        <p class="section-num">06</p>
+        <h2>Structure of the memory</h2>
+        <p class="section-lede">The dissertation comprises five chapters.</p>
       </div>
-      <div class="grid-3" style="margin-top: var(--space-8);">
-        <div class="feature card-flat scroll-up delay-1">
-          <div class="feature-mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
-          </div>
-          <h3>Concept dataset construction</h3>
-          <p>Curating balanced sets of concept-positive and concept-negative examples from standard vision datasets, with careful controls for confounding factors.</p>
+      <div class="grid-4">
+        <div class="step reveal delay-1">
+          <p class="section-num num">Ch. 2</p>
+          <h3>State of the art</h3>
+          <p>A review of concept-based explainable AI.</p>
         </div>
-        <div class="feature card-flat scroll-up delay-2">
-          <div class="feature-mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M4 12h10M4 17h16"/></svg>
-          </div>
-          <h3>Activation space analysis</h3>
-          <p>Training CAVs at multiple network depths to evaluate how concept information is represented hierarchically across early, middle, and late layers.</p>
+        <div class="step reveal delay-2">
+          <p class="section-num num">Ch. 3</p>
+          <h3>Controlled validation</h3>
+          <p>Robustness of TCAV and Visual-TCAV across configurations on AIXI and TXUXI.</p>
         </div>
-        <div class="feature card-flat scroll-up delay-3">
-          <div class="feature-mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M3 12h18"/></svg>
-          </div>
-          <h3>Statistical validation</h3>
-          <p>Computing TCAV scores across multiple random seeds, concept splits, and model checkpoints to assess statistical significance and reproducibility.</p>
+        <div class="step reveal delay-3">
+          <p class="section-num num">Ch. 4</p>
+          <h3>V-MedCAV</h3>
+          <p>The analysis scaled to a real dermatological classifier.</p>
+        </div>
+        <div class="step reveal delay-4">
+          <p class="section-num num">Ch. 5</p>
+          <h3>Conclusions</h3>
+          <p>A synthesis of both experimental phases.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section" data-od-id="preview" data-progress-label="Explore" data-progress-level="subsection">
-    <div class="container" style="text-align: center;">
-      <div style="max-width: 600px; margin: 0 auto;" class="scroll-up">
-        <p class="eyebrow">EXPLORE THE RESEARCH</p>
+  <section class="section cta" data-od-id="preview" data-progress-label="Explore" data-progress-level="subsection">
+    <div class="container">
+      <div class="cta-inner reveal">
+        <p class="eyebrow">Explore the research</p>
         <h2>Navigate the full study</h2>
-        <p class="lead" style="margin: var(--space-4) auto var(--space-6);">The complete analysis spans concept attribution surveys, TCAV and Txuxi experimental results, and Visual-TCAV methodology.</p>
-        <div class="hero-cta" style="justify-content: center;">
+        <p class="lead">The state of the art, the controlled validation on synthetic data, and the clinical transfer to dermoscopy.</p>
+        <div class="hero-cta">
           <a href="state-of-the-art.html" class="btn btn-primary btn-arrow">State of the Art</a>
           <a href="aixi-txuxi.html" class="btn btn-secondary btn-arrow">Aixi &amp; Txuxi</a>
           <a href="v-medcav.html" class="btn btn-secondary btn-arrow">V-Medcav</a>
@@ -347,215 +225,7 @@
   </div>
 </footer>
 
-<nav class="bottom-nav">
-  <div class="bottom-nav-inner">
-    <a href="index.html">Home</a>
-    <a href="landing.html" class="active">Introduction</a>
-    <a href="state-of-the-art.html">State of the Art</a>
-    <a href="aixi-txuxi.html">Aixi &amp; Txuxi</a>
-    <a href="v-medcav.html">V-Medcav</a>
-  </div>
-</nav>
+<nav class="progress-line" id="progressLine" aria-label="Section progress"></nav>
 
-<div class="progress-line" id="progressLine"></div>
-
-<script>
-/* ── Canvas: neural network particle system ── */
-(function() {
-  var canvas = document.getElementById('heroCanvas');
-  var ctx = canvas.getContext('2d');
-  var W, H;
-  var particles = [];
-  var mouse = { x: -1000, y: -1000 };
-  var PARTICLE_COUNT = 90;
-  var CONNECTION_DIST = 130;
-  var MOUSE_RADIUS = 140;
-
-  function resize() {
-    var rect = canvas.parentElement.getBoundingClientRect();
-    W = canvas.width = rect.width;
-    H = canvas.height = rect.height;
-  }
-  window.addEventListener('resize', resize);
-  resize();
-
-  function getAccentRGB() {
-    var el = document.createElement('div');
-    el.style.color = 'var(--accent)';
-    document.body.appendChild(el);
-    var cs = getComputedStyle(el).color;
-    document.body.removeChild(el);
-    var m = cs.match(/\d+/g);
-    if (m && m.length >= 3) return { r: +m[0], g: +m[1], b: +m[2] };
-    return { r: 27, g: 54, b: 93 };
-  }
-  var accentRGB = getAccentRGB();
-
-  function Particle() {
-    this.x = Math.random() * W;
-    this.y = Math.random() * H;
-    this.vx = (Math.random() - 0.5) * 0.35;
-    this.vy = (Math.random() - 0.5) * 0.35;
-    this.radius = Math.random() * 2.2 + 1.2;
-    this.pulse = Math.random() * Math.PI * 2;
-    this.pulseSpeed = 0.005 + Math.random() * 0.015;
-  }
-
-  function initParticles() {
-    particles = [];
-    for (var i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
-  }
-  initParticles();
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-
-    var p, dx, dy, dist, alpha, i, j;
-
-    for (i = 0; i < particles.length; i++) {
-      p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.pulse += p.pulseSpeed;
-
-      if (p.x < -20) p.x = W + 20; else if (p.x > W + 20) p.x = -20;
-      if (p.y < -20) p.y = H + 20; else if (p.y > H + 20) p.y = -20;
-
-      dx = mouse.x - p.x;
-      dy = mouse.y - p.y;
-      dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < MOUSE_RADIUS) {
-        var force = (1 - dist / MOUSE_RADIUS) * 0.12;
-        p.vx -= dx / dist * force;
-        p.vy -= dy / dist * force;
-      }
-
-      p.vx *= 0.995;
-      p.vy *= 0.995;
-    }
-
-    for (i = 0; i < particles.length; i++) {
-      for (j = i + 1; j < particles.length; j++) {
-        dx = particles[i].x - particles[j].x;
-        dy = particles[i].y - particles[j].y;
-        dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < CONNECTION_DIST) {
-          alpha = (1 - dist / CONNECTION_DIST) * 0.25;
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = 'rgba(' + accentRGB.r + ',' + accentRGB.g + ',' + accentRGB.b + ',' + alpha + ')';
-          ctx.lineWidth = 0.6;
-          ctx.stroke();
-        }
-      }
-    }
-
-    for (i = 0; i < particles.length; i++) {
-      p = particles[i];
-      var pulseAlpha = 0.5 + 0.5 * Math.sin(p.pulse);
-      var r = p.radius * (0.8 + 0.2 * pulseAlpha);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(' + accentRGB.r + ',' + accentRGB.g + ',' + accentRGB.b + ',' + (0.35 + 0.25 * pulseAlpha) + ')';
-      ctx.fill();
-    }
-
-    requestAnimationFrame(draw);
-  }
-
-  canvas.addEventListener('mousemove', function(e) {
-    var rect = canvas.getBoundingClientRect();
-    mouse.x = e.clientX - rect.left;
-    mouse.y = e.clientY - rect.top;
-  });
-  canvas.addEventListener('mouseleave', function() { mouse.x = -1000; mouse.y = -1000; });
-  canvas.addEventListener('touchmove', function(e) {
-    var t = e.touches[0];
-    var rect = canvas.getBoundingClientRect();
-    mouse.x = t.clientX - rect.left;
-    mouse.y = t.clientY - rect.top;
-  }, { passive: true });
-  canvas.addEventListener('touchend', function() { mouse.x = -1000; mouse.y = -1000; });
-
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    draw();
-  } else {
-    ctx.clearRect(0, 0, W, H);
-  }
-
-  window.addEventListener('resize', function() {
-    resize();
-    initParticles();
-  });
-})();
-
-/* ── progress line ── */
-(function() {
-  var sections = document.querySelectorAll('section[data-od-id]');
-  var line = document.getElementById('progressLine');
-  var inner = document.createElement('div'); inner.className = 'progress-inner';
-  var wrap = document.createElement('div'); wrap.className = 'progress-track-wrap';
-  var track = document.createElement('div'); track.className = 'progress-track';
-  var fill = document.createElement('div'); fill.className = 'progress-fill';
-  track.appendChild(fill); wrap.appendChild(track);
-  var nodesWrap = document.createElement('div'); nodesWrap.className = 'progress-nodes';
-  var nodeData = [];
-  sections.forEach(function(s, i) {
-    var label = s.getAttribute('data-progress-label') || 'Section ' + (i + 1);
-    var level = s.getAttribute('data-progress-level') || 'subsection';
-    var n = document.createElement('div');
-    n.className = 'progress-node ' + level;
-    var tip = document.createElement('span'); tip.className = 'progress-tooltip'; tip.textContent = label;
-    n.appendChild(tip);
-    n.addEventListener('click', function() { var r = s.getBoundingClientRect(); window.scrollTo({ top: window.scrollY + r.top - 80, behavior: 'smooth' }); });
-    nodesWrap.appendChild(n);
-    nodeData.push({ el: n, section: s });
-  });
-  wrap.appendChild(nodesWrap); inner.appendChild(wrap);
-  line.appendChild(inner);
-
-  function updateProgress() {
-    var docH = document.documentElement.scrollHeight - window.innerHeight;
-    var progress = docH > 0 ? window.scrollY / docH : 0;
-    fill.style.width = Math.min(progress * 100, 100) + '%';
-    var first = sections[0], last = sections[sections.length - 1];
-    var totalSpan = last.offsetTop - first.offsetTop;
-    nodeData.forEach(function(d) {
-      var p = totalSpan > 0 ? (d.section.offsetTop - first.offsetTop) / totalSpan : 0;
-      d.el.style.left = (p * 100) + '%';
-      d.el.classList.toggle('filled', p <= progress);
-    });
-  }
-  window.addEventListener('scroll', updateProgress);
-  window.addEventListener('resize', updateProgress);
-  updateProgress();
-})();
-
-/* ── scroll entrance observer ── */
-(function() {
-  var els = document.querySelectorAll('.scroll-up');
-  var obs = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
-    });
-  }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
-  els.forEach(function(el) { obs.observe(el); });
-})();
-</script>
-
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  renderMathInElement(document.body, {
-    delimiters: [
-      {left: '$$', right: '$$', display: true},
-      {left: '$', right: '$', display: false}
-    ],
-    throwOnError: false
-  });
-});
-</script>
 </body>
 </html>

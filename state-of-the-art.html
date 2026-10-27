@@ -5,559 +5,356 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>State of the Art · ML/XAI Research</title>
   <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR2fCJ6r82NK1S4Skgr8G2H6s7pLtT1e9GBBDE1BmkCwSj2x" crossorigin="anonymous" />
-  <style>
-    @keyframes heroFadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .hero-wide .hero-content { animation: heroFadeIn 0.6s var(--ease-standard) both; }
-    .hero-wide .hero-visual  { animation: heroFadeIn 0.6s var(--ease-standard) 0.15s both; }
-
-    .hero-wide {
-      position: relative;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      min-height: clamp(480px, 60vh, 640px);
-      padding: 0;
-      overflow: hidden;
-    }
-    .hero-wide .hero-bg {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 80% 40%, color-mix(in oklch, var(--accent) 18%, transparent), transparent),
-        radial-gradient(ellipse 60% 50% at 20% 70%, color-mix(in oklch, var(--accent) 8%, transparent), transparent),
-        var(--bg);
-    }
-    .hero-wide .hero-bg::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        repeating-linear-gradient(90deg, color-mix(in oklch, var(--accent) 3%, transparent) 0px, color-mix(in oklch, var(--accent) 3%, transparent) 1px, transparent 1px, transparent 48px),
-        repeating-linear-gradient(0deg, color-mix(in oklch, var(--accent) 2%, transparent) 0px, color-mix(in oklch, var(--accent) 2%, transparent) 1px, transparent 1px, transparent 48px);
-      opacity: 0.6;
-    }
-    .hero-wide .hero-content {
-      position: relative;
-      z-index: 1;
-      grid-column: 1 / 2;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: clamp(48px, 8vw, 120px) var(--container-gutter);
-      max-width: 580px;
-    }
-    .hero-wide .hero-content h1 { font-size: clamp(36px, 4.2vw, 60px); margin-bottom: var(--space-5); }
-    .hero-wide .hero-content .lead { font-size: clamp(15px, 1.3vw, 17px); margin-bottom: var(--space-7); }
-    .hero-wide .hero-visual {
-      position: relative;
-      z-index: 1;
-      grid-column: 2 / 3;
-      display: grid;
-      place-items: center;
-      padding: var(--container-gutter);
-    }
-    .hero-wide .hero-visual-inner {
-      width: 100%;
-      max-width: 420px;
-      aspect-ratio: 4 / 3;
-      border-radius: var(--radius-lg);
-      background:
-        radial-gradient(ellipse at 30% 40%, color-mix(in oklch, var(--accent) 25%, var(--surface)), transparent 70%),
-        var(--surface);
-      border: 1px solid var(--border);
-      display: grid;
-      place-items: center;
-      padding: var(--space-6);
-      box-shadow: var(--elev-raised);
-      position: relative;
-      overflow: hidden;
-    }
-    .hero-wide .hero-visual-inner::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, color-mix(in oklch, var(--accent) 6%, transparent) 0%, transparent 50%);
-    }
-    .hero-wide .hero-visual-label {
-      position: relative;
-      z-index: 1;
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      letter-spacing: 0.04em;
-      color: var(--meta);
-      text-align: center;
-      line-height: 1.6;
-    }
-    @media (max-width: 820px) {
-      .hero-wide { grid-template-columns: 1fr; min-height: auto; }
-      .hero-wide .hero-visual { grid-column: 1 / 2; padding: 0 var(--container-gutter) var(--space-8); }
-      .hero-wide .hero-content { padding-bottom: var(--space-6); }
-      .hero-wide .hero-visual-inner { max-width: 100%; }
-    }
-
-    /* ── method taxonomy group ── */
-    .method-family + .method-family { margin-top: var(--space-18); padding-top: var(--space-12); border-top: 1px solid var(--border); }
-    .method-family-head { margin-bottom: var(--space-8); }
-    .method-family-head h2 { font-size: var(--text-2xl); }
-    .method-family-head p { color: var(--muted); max-width: 56ch; margin-top: var(--space-2); }
-
-    .method-block {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-12);
-      align-items: center;
-      padding-block: var(--space-8);
-    }
-    .method-block.reverse { direction: rtl; }
-    .method-block.reverse > * { direction: ltr; }
-    .method-block + .method-block { border-top: 1px solid var(--border-soft); }
-    .method-block .method-label {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      letter-spacing: var(--tracking-eyebrow);
-      color: var(--accent);
-      margin-bottom: var(--space-3);
-    }
-    .method-block h3 { font-size: var(--text-xl); margin-bottom: var(--space-3); }
-    .method-block p { color: var(--fg-2); line-height: var(--leading-body); }
-    .method-block p + p { margin-top: var(--space-4); }
-    .method-block .method-math { margin-top: var(--space-5); }
-    .method-visual {
-      border-radius: var(--radius-lg);
-      background:
-        radial-gradient(ellipse at 40% 30%, color-mix(in oklch, var(--accent) 12%, var(--surface)), transparent 70%),
-        var(--surface);
-      border: 1px solid var(--border);
-      aspect-ratio: 16 / 11;
-      display: grid;
-      place-items: center;
-      padding: var(--space-6);
-      box-shadow: var(--elev-raised);
-      position: relative;
-      overflow: hidden;
-      text-align: center;
-    }
-    .method-visual .vis-label {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      color: var(--meta);
-      line-height: 1.6;
-    }
-    .method-visual .vis-tag {
-      display: inline-block;
-      padding: 4px 10px;
-      background: var(--tag-bg-soft);
-      color: var(--accent);
-      border-radius: var(--radius-xs);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.3px;
-      line-height: 1;
-      margin-bottom: var(--space-3);
-    }
-    .method-visual .vis-icon {
-      width: 40px;
-      height: 40px;
-      margin-bottom: var(--space-3);
-      color: var(--accent);
-    }
-    @media (max-width: 920px) {
-      .method-block { grid-template-columns: 1fr; gap: var(--space-6); }
-      .method-block.reverse { direction: ltr; }
-      .method-block .method-visual { min-height: 200px; }
-    }
-
-    .gap-list { list-style: none; padding: 0; }
-    .gap-list li { position: relative; padding-left: 20px; margin-bottom: var(--space-4); color: var(--fg-2); line-height: var(--leading-body); }
-    .gap-list li::before { content: '\2013'; position: absolute; left: 0; color: var(--accent); }
-
-    .intro-text { max-width: 680px; color: var(--fg-2); line-height: var(--leading-body); }
-    .intro-text p { margin-bottom: var(--space-5); }
-
-    .taxonomy-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-6);
-      margin-top: var(--space-8);
-    }
-    .taxonomy-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: var(--space-6);
-      transition: box-shadow var(--motion-base) var(--ease-standard);
-    }
-    .taxonomy-card:hover { box-shadow: var(--elev-raised); }
-    .taxonomy-card h3 { font-size: var(--text-base); margin-bottom: var(--space-2); }
-    .taxonomy-card p { font-size: 14px; color: var(--muted); }
-    .taxonomy-card .taxo-icon {
-      width: 32px; height: 32px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      display: grid; place-items: center;
-      color: var(--accent);
-      margin-bottom: var(--space-4);
-    }
-    @media (max-width: 768px) { .taxonomy-grid { grid-template-columns: 1fr; } }
-  </style>
+  <link rel="stylesheet" href="vendor/katex/katex.min.css" />
+  <script defer src="vendor/katex/katex.min.js"></script>
+  <script defer src="vendor/katex/auto-render.min.js"></script>
+  <script defer src="js/site.js"></script>
+  <script defer src="js/visuals.js"></script>
+  <script defer src="js/figures.js"></script>
 </head>
 <body>
 
-<main>
-  <section class="hero-wide" data-od-id="hero" data-progress-label="Methods Overview" data-progress-level="section">
-    <div class="hero-bg"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topnav">
+  <div class="topnav-inner">
+    <a class="topnav-brand" href="index.html">ML/XAI Research</a>
+    <nav aria-label="Primary">
+      <ul class="topnav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="landing.html">Introduction</a></li>
+        <li><a href="state-of-the-art.html" aria-current="page">State of the Art</a></li>
+        <li><a href="aixi-txuxi.html">Aixi &amp; Txuxi</a></li>
+        <li><a href="v-medcav.html">V-Medcav</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero-wide" data-od-id="hero" data-progress-label="State of the Art" data-progress-level="section">
+    <div class="hero-bg" aria-hidden="true"></div>
     <div class="hero-content">
-      <p class="eyebrow" style="--eyebrow-color: var(--accent); color: var(--accent);">STATE OF THE ART</p>
-      <h1>From Saliency to Concepts, and Beyond</h1>
-      <p class="lead">A review of the concept-based explainability landscape that frames TCAV and Visual-TCAV — the two central methods of this dissertation — within the field's progression: from the documented failures of pixel-level saliency, through supervised concept attribution, to automatic concept discovery, architectural integration, and causal concept reasoning.</p>
-      <div class="hero-cta">
-        <a href="#saliency" class="btn btn-primary btn-arrow">Saliency &amp; its limits</a>
-        <a href="#comparison" class="btn btn-secondary btn-arrow">Taxonomy table</a>
+      <p class="eyebrow eyebrow--accent reveal">Chapter 2 · State of the art</p>
+      <h1 class="reveal delay-1">Concept-Based Explainability Methods</h1>
+      <p class="lead reveal delay-2">A review of the current landscape of concept-based explainability, placing TCAV and Visual-TCAV within a taxonomy that spans supervised concept methods, unsupervised concept discovery, concept-structured architectures and causal concept reasoning.</p>
+      <div class="hero-cta reveal delay-3">
+        <a href="#taxonomy" class="btn btn-primary btn-arrow">Explore methods</a>
+        <a href="#positioning" class="btn btn-secondary btn-arrow">Positioning</a>
       </div>
     </div>
-    <div class="hero-visual">
+    <div class="hero-visual reveal delay-2">
       <div class="hero-visual-inner">
-        <div class="hero-visual-label">
-          Saliency → CAVs → Visual-TCAV →<br />automatic discovery → architectural<br />&amp; causal concept reasoning
-        </div>
+        <div class="viz" data-visual="taxonomy" role="group" aria-label="Taxonomy of the concept-based methods reviewed: supervised, unsupervised, and methods beyond CAVs"></div>
+        <p class="vis-label">Methods reviewed in this chapter</p>
       </div>
     </div>
   </section>
 
-  <section class="section" data-od-id="taxonomy" data-progress-label="Organisation" data-progress-level="section" id="taxonomy">
+  <section class="section" data-od-id="taxonomy" data-progress-label="Overview" data-progress-level="section" id="taxonomy">
     <div class="container">
-      <div class="intro-text">
+      <div class="prose reveal">
         <div class="section-head">
           <p class="section-num">01</p>
-          <h2>How this review is organised</h2>
-          <p class="section-lede">This chapter tries to give a faithful review of the current landscape of concept-based explainability methods, placing TCAV and Visual-TCAV within the broader taxonomy that spans from the foundational limitations of pixel-level attribution to the most recent innovations in concept discovery, concept-structured architectures, and causal concept reasoning.</p>
+          <h2>Mapping the field</h2>
+          <p class="section-lede">The review follows a logical progression of the field: from the shortcomings of saliency methods that motivated the turn toward concepts, to the supervised methods at the core of this work, to the unsupervised and hybrid approaches that address the scalability of user-defined concepts.</p>
         </div>
-        <p>The review is organised to reflect a roughly logical progression of the field: it goes through the shortcomings of saliency methods that motivated the turn toward concepts, through the <strong>supervised</strong> concept-based methods that define the core methodology used throughout this work, to the <strong>unsupervised and hybrid</strong> approaches that address the scalability limits of user-defined concept vocabularies — and finally to architectural and causal extensions that push concept-based reasoning beyond correlation.</p>
-        <p>Four axes recur throughout: whether concepts are <em>user-defined or automatically discovered</em>, whether the method yields <em>local or global</em> explanations, whether it is applied <em>post-hoc or requires architectural modification</em>, and whether the concept–prediction relationship is treated as <em>correlational or causal</em>. The comparison table in §06 situates every method surveyed here along these axes.</p>
+        <p>The supervised concept-based school of thought begins with the premise that a human analyst can define a concept of interest by providing a set of example images, and that the model’s internal representations can be probed to determine whether and how that concept influences predictions. Other lines of work discover concepts automatically, build them into the architecture, or reason about them causally.</p>
       </div>
 
-      <div class="taxonomy-grid">
-        <div class="taxonomy-card scroll-entrance">
-          <div class="taxo-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="18" height="18"><path d="M3 3h18v18H3z"/><path d="M9 3v18M15 3v18"/></svg>
+      <div class="grid-3">
+        <div class="card reveal delay-1">
+          <div class="icon-box">
+            <svg class="od-icon od-icon--lg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           </div>
-          <h3>Pixel-level saliency</h3>
-          <p>Gradient-based maps that identify which input pixels matter — and the documented instabilities (adversarial fragility, lack of input invariance, randomisation insensitivity) that motivate a move beyond pixels.</p>
+          <h3>Supervised concepts</h3>
+          <p>Concepts are defined by the user through example images. TCAV, Regression Concept Vectors, Network Dissection and Visual-TCAV.</p>
         </div>
-        <div class="taxonomy-card scroll-entrance">
-          <div class="taxo-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="18" height="18"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        <div class="card reveal delay-2">
+          <div class="icon-box">
+            <svg class="od-icon od-icon--lg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg>
           </div>
-          <h3>Supervised concept attribution</h3>
-          <p>CAVs, TCAV, Regression Concept Vectors, Network Dissection and Visual-TCAV — probing activation space with human-defined concept directions. The methodological core of this dissertation.</p>
+          <h3>Automatic extraction</h3>
+          <p>Concepts are discovered from the network’s own activations. ACE, CRAFT and ConceptSHAP.</p>
         </div>
-        <div class="taxonomy-card scroll-entrance">
-          <div class="taxo-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="18" height="18"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg>
+        <div class="card reveal delay-3">
+          <div class="icon-box">
+            <svg class="od-icon od-icon--lg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v18H3z"/><path d="M9 3v18M15 3v18"/></svg>
           </div>
-          <h3>Discovery, architecture &amp; causality</h3>
-          <p>ACE, CRAFT and ConceptSHAP automate concept discovery; Concept Bottleneck Models bake concepts into the architecture; CaCE and CRP push toward causal and spatially-grounded concept reasoning.</p>
+          <h3>Beyond post-hoc CAVs</h3>
+          <p>Concept Bottleneck Models, the Causal Concept Effect and Concept Relevance Propagation.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section" data-od-id="saliency" data-progress-label="Limits of Saliency" data-progress-level="section" id="saliency">
+  <section class="section" data-od-id="supervised" data-progress-label="Supervised Methods" data-progress-level="section" id="supervised">
     <div class="container">
-      <div class="method-family">
-        <div class="method-family-head">
-          <p class="section-num">02</p>
-          <h2>The limitations of saliency methods</h2>
-          <p>Before examining concept-based approaches in detail, it is necessary to establish why they are needed. Gradient-based saliency methods are powerful and remain widely adopted, but a substantial body of work has revealed pathologies that limit their reliability as explanatory tools in critical fields — and it is precisely these pathologies that license the turn toward concepts.</p>
-        </div>
+      <div class="section-head section-head--narrow reveal">
+        <p class="section-num">02</p>
+        <h2>Supervised concept methods</h2>
+        <p class="section-lede">From Concept Activation Vectors to Visual-TCAV: a human analyst defines a concept with example images, and the model’s internal representations are probed to determine whether and how that concept influences predictions.</p>
+      </div>
 
-        <div class="method-block scroll-entrance">
-          <div class="method-visual">
-            <div>
-              <div class="vis-tag">Simonyan et al. · 2014</div>
-              <div class="vis-label">∂h<sub>c</sub> / ∂x — gradient of the<br />class score w.r.t. the input<br /><br />[ The founding gradient-saliency paradigm ]</div>
-            </div>
+      <div class="method-block reveal">
+        <figure class="fig method-fig">
+          <button type="button" class="fig-frame" aria-label="Enlarge figure: Construction of a Concept Activation Vector at layer l"><img src="images/tcav/cav_construction.png" width="3600" height="1528" alt="Concept and random counterexample activations separated by a linear classifier whose normal is the CAV" loading="lazy" decoding="async" /></button>
+          <figcaption class="figure-caption">Construction of a Concept Activation Vector at layer $l$. A binary linear classifier separates the concept examples $C_p$ from the random counterexamples $C_n$; the normal to the hyperplane is the CAV $v_C^l$.</figcaption>
+        </figure>
+        <div>
+          <span class="tag-chip">TCAV · Kim et al. 2018</span>
+          <p class="method-label">Foundation</p>
+          <h3>Concept Activation Vectors</h3>
+          <p>Kim et al. introduced the foundational framework for supervised concept-based explainability. To compute a CAV, a user provides a set of examples illustrating a concept, alongside a set of random counterexamples. The network processes these inputs to extract their representations at a chosen internal layer, and a linear classifier is trained to separate the concept’s activations from the random ones. The CAV is the vector normal to this separating hyperplane.</p>
+          <p>Formally, given a positive set $C_p$ and a negative set $C_n$, the CAV $v_C^l \in \mathbb{R}^m$ is the weight vector of a binary linear classifier trained to distinguish $\{f_l(x) : x \in C_p\}$ from $\{f_l(x) : x \in C_n\}$, where $f_l$ maps the input to the $m$ activations of layer $l$. Writing $w$ for the returned weight vector, the CAV is taken at unit length:</p>
+          <div class="method-math">
+            $$ \hat{v}_C^l = \frac{w}{\lVert w \rVert_2} $$
           </div>
-          <div>
-            <p class="method-label">FOUNDATION</p>
-            <h3>Saliency maps establish the gradient-based paradigm</h3>
-            <p>Simonyan et al. (2014) introduced the foundational idea of computing the gradient of the class score with respect to the input image to produce saliency maps, establishing the paradigm of gradient-based attribution that dominated the field for several years.</p>
-            <p>Subsequent work, however, revealed fundamental instabilities. Ghorbani et al. (2018) demonstrated that adversarial perturbations — imperceptible to the human eye and leaving the predicted label unchanged — can produce dramatically different attribution maps, suggesting that saliency may reflect properties of the input–explanation mapping rather than stable properties of the model's decision process. Kindermans et al. (2017) showed that even a trivial constant shift of the input, with no effect on the prediction, can cause many attribution methods to produce entirely different importance maps; they formalised <strong>input invariance</strong> — the requirement that an explanation mirror the model's own sensitivity to such transformations — and showed that popular methods violate it. Dombrowski et al. (2019) extended these findings, linking the susceptibility of explanations to manipulation to specific geometric properties of neural networks and deriving upper bounds on how far attributions can be perturbed.</p>
-          </div>
-        </div>
-
-        <div class="method-block reverse scroll-entrance">
-          <div class="method-visual">
-            <div>
-              <div class="vis-tag">Adebayo et al. · 2018 · SmoothGrad · 2017</div>
-              <div class="vis-label">Randomised-network sanity checks<br />vs. noise-averaged gradients<br /><br />[ Diagnosing what saliency actually reflects ]</div>
-            </div>
-          </div>
-          <div>
-            <p class="method-label">SANITY CHECKS &amp; NOISE</p>
-            <h3>Randomisation tests and the limits of denoising</h3>
-            <p>In a complementary line of work, Adebayo et al. (2018) observed that saliency maps produced by networks with <em>randomly initialised</em> weights are visually and quantitatively similar to those produced by fully trained networks — suggesting that many gradient-based explanations are dominated by the architecture's low-level edge detectors rather than by the learned decision function. SmoothGrad (Smilkov et al., 2017) attempted to address the visual noise in gradient maps by averaging over many noisy copies of the input; this improves perceptual sharpness, but does not resolve the underlying concern that the gradients themselves may not faithfully reflect the model's reasoning.</p>
+          <p>For a convolutional layer the activation is a tensor $f_l(x) \in \mathbb{R}^{C \times H \times W}$. It may be flattened into $\mathbb{R}^{C \cdot H \cdot W}$, or reduced by global average pooling to a channel-wise vector, which discards where each channel responds but lowers the dimensionality by a factor of $HW$:</p>
+          <div class="method-math">
+            $$ \bar{a}_c = \frac{1}{HW} \sum_{h,w} f_l(x)_{c,h,w} $$
           </div>
         </div>
+      </div>
 
-        <div class="method-block scroll-entrance">
-          <div class="method-visual">
-            <div>
-              <div class="vis-tag">Sundararajan et al. · 2017</div>
-              <div class="vis-label">Path integral of gradients<br />from baseline $x'$ to input $x$<br /><br />[ Completeness + sensitivity, axiomatically ]</div>
-            </div>
+      <div class="method-block method-block--flip reveal">
+        <figure class="fig method-fig">
+          <button type="button" class="fig-frame" aria-label="Enlarge figure: Geometric interpretation of conceptual sensitivity"><img src="images/tcav/CAV_Sensitivity.png" width="1558" height="1558" alt="Geometric diagram of conceptual sensitivity as the projection of the CAV onto the model gradient" loading="lazy" decoding="async" /></button>
+          <figcaption class="figure-caption">Geometric interpretation of conceptual sensitivity $S_{C,k,l}(x)$ as the projection of the CAV onto the model’s gradient. An acute angle yields a positive derivative, an orthogonal angle yields zero influence, and an obtuse angle yields a negative derivative.</figcaption>
+        </figure>
+        <div>
+          <span class="tag-chip">TCAV · Kim et al. 2018</span>
+          <p class="method-label">Directional derivatives</p>
+          <h3>Conceptual sensitivity and the TCAV score</h3>
+          <p>The conceptual sensitivity of class $k$ to concept $C$ for an input $x$ is the directional derivative of the class logit $h_{l,k}$ with respect to the layer activations $f_l(x)$, in the direction of the CAV:</p>
+          <div class="method-math">
+            $$ S_{C,k,l}(x) = \lim_{\epsilon \to 0} \frac{h_{l,k}\big(f_l(x) + \epsilon\, v_C^l\big) - h_{l,k}\big(f_l(x)\big)}{\epsilon} = \nabla h_{l,k}\big(f_l(x)\big) \cdot v_C^l $$
           </div>
+          <p>The global TCAV score is the fraction of class $k$ inputs whose layer $l$ activations are positively influenced by concept $C$:</p>
+          <div class="method-math">
+            $$ \mathrm{TCAVQ}_{C,k,l} = \frac{\big|\{x \in X_k : S_{C,k,l}(x) > 0\}\big|}{|X_k|} $$
+          </div>
+          <p>TCAV requires little machine learning expertise, adapts to any concept a user can define through examples, works without retraining the network and produces a single metric for entire classes. Because the score relies only on the sign of $S_{C,k,l}$, it discards magnitude, and because it is computed on whole inputs it lacks spatial granularity.</p>
+        </div>
+      </div>
+
+      <div class="method-block reveal">
+        <div class="method-visual">
           <div>
-            <p class="method-label">AXIOMATIC APPROACH</p>
-            <h3>Integrated Gradients — an axiomatic response</h3>
-            <p>The axiomatic approach of Sundararajan et al. (2017) addressed some of these concerns by introducing Integrated Gradients (IG), which satisfies <strong>completeness</strong> (attributions sum to the difference between the prediction at the input and at a baseline) and <strong>sensitivity</strong> (a feature that changes the output receives non-zero attribution). IG's integration-along-a-path formulation is directly adopted by Visual-TCAV — generalised from pixel space to <em>feature-map space</em> — for computing concept attributions, as discussed in §03.</p>
-            <div class="method-math">
-              $$ \text{IG}_i(x) = (x_i - x'_i) \times \int_{\alpha=0}^{1} \frac{\partial f(x' + \alpha(x - x'))}{\partial x_i}\, d\alpha $$
-            </div>
-            <p style="margin-top: var(--space-3);">Yet even IG operates at the pixel level, and by itself does not connect attributions to human-understandable concepts. These limitations — instability, architecture-dominance, and the absence of any semantic vocabulary — motivate the transition to concept-based methods: rather than attributing importance to individual pixels and hoping a human observer can infer which concept is responsible, concept-based methods define the concept explicitly and measure the model's sensitivity to it directly in activation space.</p>
+            <span class="tag-chip">RCV · Graziani et al. 2018</span>
+            <p class="vis-label">Linear regressor in place of<br />the binary concept classifier</p>
           </div>
+        </div>
+        <div>
+          <p class="method-label">Continuous concepts</p>
+          <h3>Regression Concept Vectors</h3>
+          <p>Graziani et al. extended the CAV framework with Regression Concept Vectors, which replace the binary concept classifier with a linear regressor. Concepts can then be defined along a continuous scale rather than as a binary presence or absence, which is useful where concepts are quantitative, such as the degree of cell irregularity in histopathology or the intensity of a colour.</p>
+          <p>The directional derivative along an RCV quantifies how sensitive the prediction is to a continuous increase or decrease in the concept’s magnitude. The extension still operates at the global level without spatial grounding.</p>
+        </div>
+      </div>
+
+      <div class="method-block method-block--flip reveal">
+        <div class="method-visual">
+          <div>
+            <span class="tag-chip">Network Dissection · Bau et al. 2017</span>
+            <p class="vis-label">IoU between unit activation maps<br />and concept annotation masks</p>
+          </div>
+        </div>
+        <div>
+          <p class="method-label">A complementary perspective</p>
+          <h3>Network Dissection</h3>
+          <p>Network Dissection evaluates whether individual neurons or feature maps align with semantically meaningful categories, a foundational example of mechanistic explainability. A densely annotated corpus, the Broden dataset, is passed through the network, and the intersection-over-union between each unit’s activation map and each concept’s mask is measured. A unit is a detector for a concept if the IoU exceeds a threshold.</p>
+          <p>Where TCAV asks “is this concept important for this prediction?”, Network Dissection asks “does any unit in this layer encode this concept?”. A concept may be encoded without being used for the prediction, or influence predictions through distributed representations that no single unit detects.</p>
+        </div>
+      </div>
+
+      <div class="method-block reveal">
+        <figure class="fig method-fig">
+          <button type="button" class="fig-frame" aria-label="Enlarge figure: The Visual-TCAV pooled-CAV construction pipeline"><img src="images/visualtcav/pooled-cav.png" width="1852" height="1434" alt="Pipeline diagram of the Visual-TCAV pooled-CAV construction" loading="lazy" decoding="async" /></button>
+          <figcaption class="figure-caption">The Visual-TCAV pooled-CAV construction pipeline. The initial CAV is computed by Difference of Means between the centroids of the concept and random activations, and Global Average Pooling collapses its $H \times W$ dimensions into a pooled-CAV with one weight per feature map.</figcaption>
+        </figure>
+        <div>
+          <span class="tag-chip">Visual-TCAV · De Santis et al. 2024</span>
+          <p class="method-label">Spatial grounding</p>
+          <h3>Visual-TCAV and the pooled-CAV</h3>
+          <p>De Santis et al. introduced Visual-TCAV to address two limitations of TCAV: the absence of spatial information and the inability to quantify per-instance concept importance. For each input image it produces a concept map that localises where the network recognises a concept, and a concept attribution score that estimates how much that concept contributes to the prediction of a class.</p>
+          <p>Instead of a linear classifier, Visual-TCAV computes the CAV by Difference of Means, a parameter-free and deterministic estimator recommended by Martin and Weller:</p>
+          <div class="method-math">
+            $$ \mu_p = \frac{1}{|C_p|} \sum_{x \in C_p} f_l(x), \qquad \mu_n = \frac{1}{|C_n|} \sum_{x \in C_n} f_l(x), \qquad \hat{v}_C^l = \frac{\mu_p - \mu_n}{\lVert \mu_p - \mu_n \rVert_2} $$
+          </div>
+          <p>Its failure mode: the centroid difference is only as faithful as the concept signal is dominant over any other systematic difference between the two pools. When another difference dominates, the direction aligns with that axis rather than with the concept. A Global Average Pooling of the CAV then yields the pooled-CAV, whose length equals the number of feature maps in the target layer.</p>
+        </div>
+      </div>
+
+      <div class="method-block method-block--flip reveal">
+        <figure class="fig method-fig">
+          <button type="button" class="fig-frame" aria-label="Enlarge figure: Construction of the concept map"><img src="images/visualtcav/conceptmap.png" width="1244" height="782" alt="Diagram of concept map construction from pooled-CAV-weighted feature maps" loading="lazy" decoding="async" /></button>
+          <figcaption class="figure-caption">Construction of the concept map $M^c$ as the ReLU-rectified, pooled-CAV-weighted sum of the target-layer feature maps. The rectification retains only locations positively correlated with the concept direction.</figcaption>
+        </figure>
+        <div>
+          <p class="method-label">Concept map</p>
+          <h3>Where the concept is recognised</h3>
+          <p>The concept map is a weighted sum of the feature maps at the target layer, using the pooled-CAV values $p_k^c$ as weights, followed by a ReLU that retains only positively correlated regions:</p>
+          <div class="method-math">
+            $$ M^c = \mathrm{ReLU}\Big( \sum_k p_k^c \cdot \mathrm{fmaps}_k \Big) $$
+          </div>
+          <p>This is structurally analogous to Grad-CAM, with one distinction: Grad-CAM weights the maps with the global-average-pooled gradients of the class logit, producing a class-discriminative map, while Visual-TCAV uses the pooled-CAV, producing a concept-discriminative map. The concept map is therefore class-agnostic: it shows where the network recognises a concept regardless of which class is being predicted.</p>
+        </div>
+      </div>
+
+      <div class="method-block reveal">
+        <figure class="fig method-fig">
+          <button type="button" class="fig-frame" aria-label="Enlarge figure: Computation of the concept attribution score"><img src="images/visualtcav/conceptattribution.png" width="1246" height="782" alt="Diagram of the concept attribution score computation" loading="lazy" decoding="async" /></button>
+          <figcaption class="figure-caption">Computation of the concept attribution score $a_{c,k}$. Feature-space Integrated Gradients of the class logit are weighted by the pooled-CAV and masked by the normalised concept map.</figcaption>
+        </figure>
+        <div>
+          <p class="method-label">Concept attribution</p>
+          <h3>How much the concept contributes</h3>
+          <p>The attribution is a generalised application of Integrated Gradients in feature-map space, integrating from a zero baseline $F_0$ to the feature maps $F$ along a straight line, where $z_k$ is the logit for class $k$:</p>
+          <div class="method-math">
+            $$ \mathrm{IG}^k = (F - F_0) \odot \int_0^1 \frac{\partial z_k\big(F_0 + \alpha (F - F_0)\big)}{\partial F}\, d\alpha $$
+          </div>
+          <p>These attributions are normalised, weighted by the pooled-CAV and spatially masked by the concept map to give the concept attribution score:</p>
+          <div class="method-math">
+            $$ a_{c,k} = \sum_{i,j} M_{ij}^{c,\mathrm{norm}} \cdot \Big( \sum_k \hat{p}_k^c \cdot \widehat{\mathrm{IG}}{}^k \Big)_{ij} $$
+          </div>
+          <p>The concept map only answers whether and where a pattern was detected. By intersecting it with the class-specific gradients, $a_{c,k}$ isolates the features that were both recognised as the concept and used to increase the logit for class $k$. Visual-TCAV was designed for spatial grounding (D1), per-instance attribution (D2) and aggregatability (D3), so local attributions can be averaged into class-level explanations comparable to TCAV scores.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section" data-od-id="supervised-concepts" data-progress-label="Supervised Concepts" data-progress-level="section" id="supervised-concepts">
+  <section class="section" data-od-id="unsupervised" data-progress-label="Unsupervised Extraction" data-progress-level="section" id="unsupervised">
     <div class="container">
-      <div class="method-family">
-        <div class="method-family-head">
-          <p class="section-num">03</p>
-          <h2>Supervised concept-based methods: from CAVs to Visual-TCAV</h2>
-          <p>The supervised concept-based school of thought begins with the premise that a human analyst can define a concept of interest by providing a set of example images, and that the model's internal representations can then be probed to determine whether and how that concept influences its predictions. This section traces the methodological shift from the original TCAV through to its most recent spatial extension — the methods that form the experimental backbone of this dissertation.</p>
-        </div>
+      <div class="section-head section-head--narrow reveal">
+        <p class="section-num">03</p>
+        <h2>Automatic concept extraction</h2>
+        <p class="section-lede">Supervised methods require concepts to be defined in advance. That requirement is natural where a vocabulary already exists, such as the 7-point checklist in dermoscopy, but becomes a bottleneck when the goal is to discover what concepts a network has learned.</p>
+      </div>
 
-        <div class="method-block scroll-entrance">
-          <div class="method-visual">
-            <div>
-              <div class="vis-tag">Kim et al. · 2018</div>
-              <div class="vis-label">CAV = normal to a hyperplane<br />separating concept from random<br />examples in activation space<br /><br />[ Linear probe, directional derivative ]</div>
-            </div>
-          </div>
+      <div class="method-block reveal">
+        <div class="method-visual">
           <div>
-            <p class="method-label">FOUNDATION</p>
-            <h3>Concept Activation Vectors and TCAV</h3>
-            <p>Kim et al. (2018) introduced the foundational framework for supervised concept-based explainability. A <strong>Concept Activation Vector</strong> (CAV) is the normal to a hyperplane separating activations of user-defined concept examples $C_p$ from random counterexamples $C_n$ at a given layer $l$ — formally, the weight vector $\mathbf{v}_C^l \in \mathbb{R}^m$ of a binary linear classifier trained on $\{f_l(x) : x \in C_p\}$ versus $\{f_l(x) : x \in C_n\}$.</p>
-            <p>The <strong>conceptual sensitivity</strong> of class $k$ to concept $C$ for input $x$ is the directional derivative of the class logit along the CAV direction, and the global <strong>TCAV score</strong> aggregates this over a class as the fraction of inputs pushed positively:</p>
-            <div class="method-math">
-              $$ S_{C,k,l}(x) = \nabla h_{l,k}(f_l(x)) \cdot \mathbf{v}_C^l, \qquad \text{TCAV}_{Q_{C,k,l}} = \frac{|\{x \in X_k : S_{C,k,l}(x) > 0\}|}{|X_k|} $$
-            </div>
-            <p style="margin-top: var(--space-3);">Kim et al. validated the method by showing it correctly identified whether a model relied on visual features or on superimposed text captions (e.g. the word "cab" stamped on a cab image). TCAV is attractive because it requires little ML expertise, adapts to any user-defined concept, needs no retraining, and yields a single global quantitative score — but, by relying only on the <em>sign</em> of the directional derivative, it discards magnitude and provides no spatial granularity: it can say that "striped" matters for "zebra", but not <em>where</em> in the image. These are limitations of scope, not of correctness, and they motivate everything that follows.</p>
+            <span class="tag-chip">ACE · Ghorbani et al. 2019</span>
+            <p class="vis-label">Multi-resolution segments,<br />k-means clusters as concepts</p>
           </div>
         </div>
+        <div>
+          <p class="method-label">Automatic discovery</p>
+          <h3>ACE: Automatic Concept-based Explanations</h3>
+          <p>ACE segments training images at multiple resolutions, extracts the activations of each segment and clusters them with k-means. Each cluster is interpreted as a concept, and its importance is estimated with TCAV scores computed from CAVs derived from the cluster centroids.</p>
+          <p>ACE removes manual concept definition but the discovered “concepts” are not guaranteed to be semantically meaningful, the number of clusters must be chosen, and the segmentation resolution heavily influences what is found. The main reason to prefer TCAV is semantic control: manually defined concepts keep the explanation grounded in the user’s exact vocabulary.</p>
+        </div>
+      </div>
 
-        <div class="method-block reverse scroll-entrance">
-          <div class="method-visual">
-            <div>
-              <div class="vis-tag">Graziani et al. · 2019 · Bau et al. · 2017</div>
-              <div class="vis-label">Continuous concept regressors<br />vs. unit–concept IoU alignment<br /><br />[ Two complementary global probes ]</div>
-            </div>
-          </div>
+      <div class="method-block method-block--flip reveal">
+        <figure class="fig method-fig">
+          <button type="button" class="fig-frame" aria-label="Enlarge figure: Overview of the CRAFT pipeline"><img src="images/models/craft_overview.png" width="1394" height="418" alt="Overview of the CRAFT pipeline: non-negative matrix factorization, Sobol importance and concept attribution maps" loading="lazy" decoding="async" /></button>
+          <figcaption class="figure-caption">Overview of the CRAFT pipeline. The activation tensor is decomposed by Non-negative Matrix Factorization into concept components, whose importance is estimated through Sobol indices and whose spatial extent is recovered as Concept Attribution Maps via implicit differentiation.</figcaption>
+        </figure>
+        <div>
+          <span class="tag-chip">CRAFT · Fel et al. 2023</span>
+          <p class="method-label">Non-negative factorization</p>
+          <h3>CRAFT</h3>
+          <p>CRAFT applies Non-negative Matrix Factorization to the activation tensor, decomposing it into non-negative concept components, an inductive bias that encourages parts-based, interpretable decompositions. It adds a recursive strategy that detects concepts across multiple layers, Sobol-index-based concept importance and Concept Attribution Maps obtained through implicit differentiation.</p>
+          <p>Zhang et al. use the same connection in Non-negative Concept Activation Vectors (NCAVs), whose framework, Invertible Concept-based Explanations (ICE), outperformed standard CAVs in fidelity and interpretability. CRAFT still requires the number of components to be fixed in advance, and its factors need human labelling before they can be regarded as concepts.</p>
+        </div>
+      </div>
+
+      <div class="method-block reveal">
+        <div class="method-visual">
           <div>
-            <p class="method-label">CONTINUOUS CONCEPTS &amp; A COMPLEMENTARY LENS</p>
-            <h3>Regression Concept Vectors and Network Dissection</h3>
-            <p>Graziani et al. (2019) extended the CAV framework with <strong>Regression Concept Vectors</strong> (RCVs), replacing the binary concept classifier with a linear regressor so that concepts can be defined on a continuous scale — useful in domains such as histopathology, where "degree of cell irregularity" is naturally graded rather than present/absent. RCVs widen the applicability of the framework but retain its global, spatially-ungrounded character.</p>
-            <p>Bau et al. (2017) took a different angle with <strong>Network Dissection</strong>: rather than probing for externally-defined concepts, it asks whether individual units already <em>encode</em> semantically meaningful categories, measuring the intersection-over-union between each unit's activation map and densely annotated concept masks (the Broden dataset). Where TCAV asks "is this concept important for this prediction?", Network Dissection asks "does any unit encode this concept at all?" — a concept may be encoded (high IoU) without being used (low TCAV score), or used through a distributed code that no single unit detects.</p>
+            <span class="tag-chip">ConceptSHAP · Yeh et al. 2020</span>
+            <p class="vis-label">Shapley values over concept sets,<br />optimised for completeness</p>
           </div>
         </div>
-
-        <div class="method-block scroll-entrance">
-          <div class="method-visual">
-            <div>
-              <div class="vis-tag">De Santis et al. · 2025</div>
-              <div class="vis-label">Pooled-CAV-weighted concept maps<br />+ Integrated Gradients in feature space<br /><br />[ 98.33% concept-ranking accuracy ]</div>
-            </div>
-          </div>
-          <div>
-            <p class="method-label">SPATIAL EXTENSION — THE METHOD AT THE CORE OF THIS WORK</p>
-            <h3>Visual-TCAV: spatial grounding and per-instance attribution</h3>
-            <p>De Santis et al. (2025) introduced Visual-TCAV to close TCAV's two principal gaps — the absence of spatial information and the inability to quantify per-instance ("local") concept importance. For each input it produces both a <em>concept map</em> that localises where the network recognises a concept, and a <em>concept attribution</em> score quantifying that concept's contribution to a class prediction.</p>
-            <p>The CAV is fitted as a <strong>difference of means</strong> between concept and random activations (motivated by Martin &amp; Weller's finding that this is more stable than logistic-regression or SVM CAVs), then global-average-pooled into a <em>pooled-CAV</em> $p^c$. The concept map is a ReLU-gated, pooled-CAV-weighted sum of feature maps — structurally analogous to Grad-CAM, but <em>concept-discriminative</em> rather than class-discriminative, since it uses $p^c$ rather than pooled class-gradients as weights:</p>
-            <div class="method-math">
-              $$ M^c = \text{ReLU}\!\left( \sum_k p_k^c \cdot \text{fmaps}_k \right) $$
-            </div>
-            <p style="margin-top: var(--space-3);">The concept attribution generalises Integrated Gradients from pixel space to feature-map space, integrating from a zero-filled baseline $F_0$ to the actual feature maps $F$ along a straight-line path, then masking by the (normalised) concept map. Designed to satisfy spatial grounding, per-instance attribution and aggregatability simultaneously, Visual-TCAV was validated on tagged images using the original TCAV protocol: it identified the more important concept with <strong>98.33&nbsp;%</strong> accuracy, against <strong>71.67&nbsp;%</strong> for Grad-CAM and <strong>65.83&nbsp;%</strong> for Integrated Gradients — differences confirmed significant by McNemar's test. This is the method whose PyTorch port and empirical behaviour are characterised in depth in the following two chapters.</p>
-          </div>
+        <div>
+          <p class="method-label">Completeness</p>
+          <h3>ConceptSHAP</h3>
+          <p>Yeh et al. introduced completeness for concept-based explanations: the set of concepts should be sufficient to account for the model’s prediction behaviour. ConceptSHAP discovers concepts by optimising for completeness while encouraging interpretability, and estimates importance with Shapley values over concept sets, capturing interactions that TCAV, which evaluates each concept independently, cannot.</p>
+          <p>Computing Shapley values is exponential in the number of concepts and must be approximated. Completeness guarantees that the set is predictive, not that its members are individually interpretable, and the number of concepts remains a free parameter.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section" data-od-id="auto-concepts" data-progress-label="Concept Discovery" data-progress-level="section" id="auto-concepts">
+  <section class="section" data-od-id="architectural" data-progress-label="Beyond Post-hoc CAVs" data-progress-level="section" id="architectural">
     <div class="container">
-      <div class="method-family">
-        <div class="method-family-head">
-          <p class="section-num">04</p>
-          <h2>Unsupervised and automatic concept extraction</h2>
-          <p>The supervised methods above require the analyst to define concepts in advance and provide labelled examples. That requirement is natural in domains with a pre-existing conceptual vocabulary — the seven-point checklist in dermoscopy, used in this dissertation's clinical chapter, is exactly such a vocabulary — but it becomes a bottleneck when the goal is to <em>discover</em> what concepts a network has learned, rather than test for the presence of specific ones.</p>
-        </div>
+      <div class="section-head section-head--narrow reveal">
+        <p class="section-num">04</p>
+        <h2>Architectures, causality and relevance</h2>
+        <p class="section-lede">Three further lines of work: concepts built into the prediction pipeline, causal rather than correlational concept effects, and relevance propagation conditioned on concepts.</p>
+      </div>
 
-        <div class="method-block scroll-entrance">
-          <div class="method-visual">
-            <div>
-              <div class="vis-tag">Ghorbani et al. · 2019 · ACE</div>
-              <div class="vis-label">Multi-resolution segmentation<br />→ activation clustering → TCAV<br /><br />[ Automatic Concept-based Explanations ]</div>
-            </div>
-          </div>
-          <div>
-            <p class="method-label">CLUSTERING-BASED DISCOVERY</p>
-            <h3>ACE — Automatic Concept-based Explanations</h3>
-            <p>Ghorbani et al. (2019) proposed ACE, which discovers concepts automatically by segmenting training images at multiple resolutions, extracting each segment's activations, and clustering them with $k$-means; each cluster becomes a "concept" whose importance is then estimated via TCAV scores from cluster-centroid CAVs. ACE removes the manual-definition bottleneck, but introduces new ones: discovered clusters are not guaranteed to be semantically meaningful, the number of clusters must be chosen, segmentation granularity strongly shapes which concepts emerge, and — because it scores concepts via TCAV — ACE inherits TCAV's global, sign-based limitation.</p>
-          </div>
+      <div class="method-block reveal">
+        <figure class="fig method-fig">
+          <button type="button" class="fig-frame" aria-label="Enlarge figure: The Concept Bottleneck Model architecture"><img src="images/models/cbm.png" width="1690" height="1442" alt="Diagram of a Concept Bottleneck Model mapping input to concept predictions and then to a class label" loading="lazy" decoding="async" /></button>
+          <figcaption class="figure-caption">The Concept Bottleneck Model architecture. The input is mapped to human-defined concept predictions, the bottleneck, and the class label is predicted solely from these concept activations.</figcaption>
+        </figure>
+        <div>
+          <span class="tag-chip">CBM · Koh et al. 2020</span>
+          <p class="method-label">Ante-hoc concepts</p>
+          <h3>Concept Bottleneck Models</h3>
+          <p>In a Concept Bottleneck Model the network first predicts a set of human-defined concept labels from the input and then predicts the class label from those concepts. All information passes through this bottleneck, so concept predictions are inspectable and intervenable: a user can correct a mispredicted concept at test time and observe how the correction propagates.</p>
+          <p>CBMs require dense concept annotations at training time and lose accuracy if the annotated concepts do not capture all relevant information. Mahinpei et al. showed that CBM concept representations can encode information beyond the predefined concepts, which they term information leakage.</p>
         </div>
+      </div>
 
-        <div class="method-block reverse scroll-entrance">
-          <div class="method-visual">
-            <div>
-              <div class="vis-tag">Fel et al. · 2023 · Zhang et al. · 2021</div>
-              <div class="vis-label">Non-negative matrix factorisation<br />+ Sobol importance + spatial maps<br /><br />[ CRAFT, NCAV / ICE ]</div>
-            </div>
-          </div>
+      <div class="method-block method-block--flip reveal">
+        <div class="method-visual">
           <div>
-            <p class="method-label">FACTORISATION-BASED DISCOVERY</p>
-            <h3>CRAFT and non-negative concept factorisation</h3>
-            <p>Fel et al. (2023) addressed several of ACE's shortcomings with CRAFT, which applies <strong>Non-negative Matrix Factorisation</strong> to the activation tensor — the non-negativity constraint biases the decomposition toward parts-based, interpretable concepts. CRAFT contributes three innovations: a recursive strategy that detects concepts across multiple layers, a Sobol-index-based importance estimator that is more faithful than sign-counting, and <em>Concept Attribution Maps</em> derived through implicit differentiation that spatially ground the discovered concepts. In a related vein, Zhang et al. (2021) proposed Non-negative Concept Activation Vectors (NCAVs) within their Invertible Concept-based Explanations (ICE) framework, replacing the standard SVM-fitted CAV with a non-negative decomposition that is shown to be more faithful and more interpretable to human subjects than ordinary CAVs.</p>
+            <span class="tag-chip">CaCE · Goyal et al. 2019</span>
+            <p class="vis-label">VAE-generated images with and<br />without the concept</p>
           </div>
         </div>
+        <div>
+          <p class="method-label">Causal reasoning</p>
+          <h3>Causal Concept Effect</h3>
+          <p>The methods above establish correlational relationships: a high TCAV score shows that a class’s predictions correlate with the concept direction, not that the concept causes them. The Causal Concept Effect measures the causal effect of the presence or absence of a concept, using a Variational Autoencoder to generate images with and without the concept and measuring the change in output.</p>
+          <p>If a concept correlates with a class only because it co-occurs with other discriminative features, TCAV will attribute importance to it, while CaCE can, in principle, separate genuine causal influence from spurious correlation.</p>
+        </div>
+      </div>
 
-        <div class="method-block scroll-entrance">
-          <div class="method-visual">
-            <div>
-              <div class="vis-tag">Yeh et al. · 2022 · ConceptSHAP</div>
-              <div class="vis-label">Completeness-optimised concepts<br />scored by Shapley value<br /><br />[ Game-theoretic concept importance ]</div>
-            </div>
-          </div>
+      <div class="method-block reveal">
+        <div class="method-visual">
           <div>
-            <p class="method-label">COMPLETENESS &amp; GAME THEORY</p>
-            <h3>ConceptSHAP — completeness-aware explanations</h3>
-            <p>Yeh et al. (2022) introduced the notion of <strong>completeness</strong>: the requirement that a concept set be sufficient, on its own, to account for the model's prediction behaviour. Their method, ConceptSHAP, discovers concepts by directly optimising for completeness while encouraging interpretability, and scores each discovered concept's importance with Shapley values computed over concept sets — a game-theoretic foundation that, unlike TCAV, can capture synergistic or antagonistic <em>interactions</em> between concepts rather than scoring each one in isolation.</p>
+            <span class="tag-chip">CRP · Achtibat et al. 2023</span>
+            <p class="vis-label">Layer-wise Relevance Propagation<br />conditioned on concept subspaces</p>
           </div>
+        </div>
+        <div>
+          <p class="method-label">Local and global</p>
+          <h3>Concept Relevance Propagation</h3>
+          <p>CRP combines the local perspective of attribution with the global perspective of concepts, answering both “where” and “what” for individual predictions. It propagates relevance with Layer-wise Relevance Propagation, conditioned on concept subspaces at intermediate layers, producing per-prediction concept relevance maps, concept atlases and concept-composition analyses.</p>
+          <p>CRP requires propagation rules suited to each architecture and layer type, and does not yield a single scalar importance score. It occupies a similar position to Visual-TCAV, and a comparative evaluation between the two remains an open research question.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section" data-od-id="architecture-causal" data-progress-label="Architecture & Causality" data-progress-level="section" id="architecture-causal">
+  <section class="section" data-od-id="positioning" data-progress-label="Positioning" data-progress-level="section" id="positioning">
+    <div class="container container--narrow">
+      <div class="section-head reveal">
+        <p class="section-num">05</p>
+        <h2>Positioning of this work</h2>
+        <p class="section-lede">The landscape can be organised by whether concepts are user-defined or discovered, local or global, post-hoc or ante-hoc, and correlational or causal.</p>
+      </div>
+      <div class="prose reveal">
+        <p>For dermoscopic skin lesion classification, this taxonomy points to a single natural quadrant. Dermoscopy already has a clinically validated concept vocabulary in the 7-point checklist, which makes supervised concept definition natural and removes the need for the unsupervised discovery of ACE, CRAFT or ConceptSHAP. The post-hoc paradigm allows existing high-performance classifiers to be analysed without retraining, unlike the ante-hoc commitment of Concept Bottleneck Models.</p>
+        <p>Within that quadrant, Visual-TCAV supplies the spatial grounding the clinical setting demands: a dermatologist does not only assess whether a pigment network is present, but also its location, extent and regularity within the lesion boundary.</p>
+      </div>
+      <figure class="quote-wrap reveal">
+        <blockquote class="quote">Semantic alignment with an established clinical vocabulary, the global aggregability of TCAV scores, and the spatial, per-instance grounding of Visual-TCAV make the supervised post-hoc pairing of the two methods the logical instrument for this two-phase evaluation.</blockquote>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section cta" data-od-id="cta-experiments" data-progress-label="Next: Experiments" data-progress-level="subsection">
     <div class="container">
-      <div class="method-family">
-        <div class="method-family-head">
-          <p class="section-num">05</p>
-          <h2>Architectural integration, causal reasoning, and hybrid local–global methods</h2>
-          <p>A final group of approaches moves beyond post-hoc analysis altogether — building concepts into the architecture, asking whether concepts are <em>causes</em> rather than correlates of predictions, or fusing the local and global perspectives that the methods above treat separately.</p>
-        </div>
-
-        <div class="method-block scroll-entrance">
-          <div class="method-visual">
-            <div>
-              <div class="vis-tag">Koh et al. · 2020 · Mahinpei et al. · 2021</div>
-              <div class="vis-label">Input → concepts → class<br />two-stage, intervenable pipeline<br /><br />[ Concept Bottleneck Models ]</div>
-            </div>
-          </div>
-          <div>
-            <p class="method-label">ANTE-HOC ARCHITECTURE</p>
-            <h3>Concept Bottleneck Models</h3>
-            <p>Koh et al. (2020) proposed Concept Bottleneck Models (CBMs), which train the network to first predict human-defined concept labels from the input and only then predict the final class from those concepts. The explicit bottleneck makes concept predictions directly inspectable and <em>intervenable</em> — a user can correct a mispredicted concept at test time and watch the correction propagate to the final decision. CBMs reach competitive accuracy when concept annotations are dense and the vocabulary is comprehensive, but they are expensive to annotate and degrade when the concept set is incomplete. Mahinpei et al. (2021) further showed that CBM concept representations can encode information beyond the predefined vocabulary — <strong>information leakage</strong> — which can render downstream interpretations misleading.</p>
-          </div>
-        </div>
-
-        <div class="method-block reverse scroll-entrance">
-          <div class="method-visual">
-            <div>
-              <div class="vis-tag">Goyal et al. · 2020</div>
-              <div class="vis-label">VAE-mediated concept<br />intervention, do(concept)<br /><br />[ Causal Concept Effect (CaCE) ]</div>
-            </div>
-          </div>
-          <div>
-            <p class="method-label">CAUSAL, NOT JUST CORRELATIONAL</p>
-            <h3>CaCE — Causal Concept Effect</h3>
-            <p>Every method discussed so far establishes a <em>correlational</em> relationship: a high TCAV score means predictions correlate with a concept direction, not that the concept <em>causes</em> the prediction — a distinction that matters acutely in high-stakes applications. Goyal et al. (2020) introduced the Causal Concept Effect (CaCE), which measures the causal effect of a concept's presence or absence on predictions. Because directly intervening on activation space is intractable, they use a Variational Autoencoder to approximate the intervention, generating matched image pairs with and without the concept and measuring the resulting change in model output — in principle distinguishing genuine causal influence from a concept that is merely correlated with the predicted class because it co-occurs with other discriminative features.</p>
-          </div>
-        </div>
-
-        <div class="method-block scroll-entrance">
-          <div class="method-visual">
-            <div>
-              <div class="vis-tag">Achtibat et al. · 2023 · Li / Chen et al.</div>
-              <div class="vis-label">Concept-conditioned LRP +<br />prototype / case-based reasoning<br /><br />[ CRP, ProtoPNet ]</div>
-            </div>
-          </div>
-          <div>
-            <p class="method-label">HYBRID LOCAL–GLOBAL &amp; CASE-BASED REASONING</p>
-            <h3>Concept Relevance Propagation and prototype networks</h3>
-            <p>Achtibat et al. (2023) introduced Concept Relevance Propagation (CRP), which combines the local view of attribution methods with the global view of concept-based approaches by propagating relevance through Layer-wise Relevance Propagation rules conditioned on concept subspaces — yielding per-prediction concept-relevance maps, concept "atlases" of a model's learned representations, and concept-composition analyses. CRP occupies a position similar to Visual-TCAV — both pursue spatially-grounded, concept-level explanations — but arrives there through modified relevance-propagation rules rather than pooled-CAV-weighted maps and feature-space Integrated Gradients; a direct comparative evaluation between the two remains an open question.</p>
-            <p>A separate, case-based tradition draws on prototypes: Li et al. (2017) proposed a network with a prototype layer whose units resemble encoded training inputs, classifying by distance to these prototypes ("classified as X because its encoding is close to prototype Y"); Chen et al. (2019) extended this with ProtoPNet, which dissects an image into prototypical <em>parts</em> and combines part-level evidence — reasoning structurally close to how a domain expert might explain a decision, while matching the accuracy of non-interpretable counterparts.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" data-od-id="comparison" data-progress-label="Taxonomy Table" data-progress-level="subsection" id="comparison">
-    <div class="container">
-      <div class="section-head" style="max-width: 46ch;">
-        <p class="section-num">06</p>
-        <h2>Taxonomy of concept-based explainability methods</h2>
-        <p class="section-lede">The landscape surveyed above can be organised along four axes: whether concepts are user-defined or automatically discovered, whether the explanation is local or global in scope, whether the method is applied post-hoc or requires architectural modification (ante-hoc), and whether it produces spatially-grounded output. The table below — reproduced from the dissertation's positioning table — situates every method discussed in this chapter within that taxonomy.</p>
-      </div>
-      <table class="ds-table">
-        <thead>
-          <tr>
-            <th>Method</th>
-            <th class="num-col">Concepts</th>
-            <th class="num-col">Scope</th>
-            <th class="num-col">Paradigm</th>
-            <th class="num-col">Spatial</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td><strong>TCAV</strong></td><td class="num-col">Supervised</td><td class="num-col">Global</td><td class="num-col">Post-hoc</td><td class="num-col">No</td></tr>
-          <tr><td>Network Dissection</td><td class="num-col">Supervised</td><td class="num-col">Global</td><td class="num-col">Post-hoc</td><td class="num-col">Yes</td></tr>
-          <tr><td><strong>Visual-TCAV</strong></td><td class="num-col">Supervised</td><td class="num-col">Local + Global</td><td class="num-col">Post-hoc</td><td class="num-col">Yes</td></tr>
-          <tr><td>ACE</td><td class="num-col">Unsupervised</td><td class="num-col">Global</td><td class="num-col">Post-hoc</td><td class="num-col">No</td></tr>
-          <tr><td>CRAFT</td><td class="num-col">Unsupervised</td><td class="num-col">Local + Global</td><td class="num-col">Post-hoc</td><td class="num-col">Yes</td></tr>
-          <tr><td>CRP</td><td class="num-col">Hybrid</td><td class="num-col">Local + Global</td><td class="num-col">Post-hoc</td><td class="num-col">Yes</td></tr>
-          <tr><td>CBM</td><td class="num-col">Supervised</td><td class="num-col">Global</td><td class="num-col">Ante-hoc</td><td class="num-col">No</td></tr>
-          <tr><td>PCBM</td><td class="num-col">Supervised</td><td class="num-col">Global</td><td class="num-col">Post-hoc</td><td class="num-col">No</td></tr>
-          <tr><td>CW</td><td class="num-col">Supervised</td><td class="num-col">Global</td><td class="num-col">Ante-hoc</td><td class="num-col">No</td></tr>
-          <tr><td>CaCE</td><td class="num-col">Supervised</td><td class="num-col">Global</td><td class="num-col">Post-hoc (causal)</td><td class="num-col">No</td></tr>
-          <tr><td>ProtoPNet</td><td class="num-col">Prototypes</td><td class="num-col">Local</td><td class="num-col">Ante-hoc</td><td class="num-col">Yes</td></tr>
-        </tbody>
-      </table>
-      <p style="margin-top: var(--space-6); color: var(--muted); font-size: 14px; max-width: 70ch;">Two rows are highlighted because they anchor the rest of this dissertation: TCAV is the canonical, globally-scoped, non-spatial concept method against which every later refinement — including this work's Concept Selectivity Score — is defined; Visual-TCAV is the only supervised, post-hoc method in the table that is simultaneously local, global <em>and</em> spatial, which is precisely the combination that licenses its use both on the controlled AIXI/TXUXI benchmarks and on the real dermatological classifier in the V-MedCAV chapter.</p>
-    </div>
-  </section>
-
-  <section class="section" data-od-id="positioning" data-progress-label="Positioning This Work" data-progress-level="subsection">
-    <div class="container" style="max-width: 760px;">
-      <div class="section-head">
-        <p class="section-num">07</p>
-        <h2>Summary and positioning of this work</h2>
-        <p class="section-lede">TCAV and Visual-TCAV sit at a specific point in this taxonomy: supervised, concept-based, and — uniquely for Visual-TCAV — both globally aggregatable and spatially grounded. That combination is what makes them suitable for a clinical setting where a practitioner must be told not only <em>which</em> concept the model relied on but <em>where</em> in the image it found it. Yet the survey above also exposes exactly where the supervised, CAV-based family is fragile: CAV fitting depends on classifier choice and sample size, TCAV's sign-based score saturates and is symmetric under sign flips, and the negative reference pool against which a concept is contrasted silently determines what the resulting CAV actually measures.</p>
-        <p>Rather than take these properties on faith, this dissertation first interrogates them on a controlled synthetic benchmark — where the ground-truth concept that drives each classifier's decision is known by construction — before transferring the resulting methodological commitments to a real dermatological classifier with no such ground truth. Four questions drive that experimental programme, and the next two chapters answer them in turn:</p>
-      </div>
-      <ul class="gap-list">
-        <li><strong>Global attribution correctness</strong> — Can canonical Kim-2018 TCAV correctly rank concepts on a controlled benchmark where the true answer is known?</li>
-        <li><strong>Spatial fidelity</strong> — Can Visual-TCAV spatially localise the right concept at the right place in the image?</li>
-        <li><strong>Methodological robustness</strong> — Do the answers to the first two questions hold under every practitioner-controlled choice — random reference pool, CAV construction method, the activation space the CAV is fitted in?</li>
-        <li><strong>Comparative advantage</strong> — What does concept-based Visual-TCAV offer that pixel-level saliency baselines (Grad-CAM, Integrated Gradients, LIME, Occlusion, …) do not?</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="section" data-od-id="cta-experiments" data-progress-label="From Survey to Experiment" data-progress-level="subsection">
-    <div class="container" style="text-align: center;">
-      <div style="max-width: 600px; margin: 0 auto;">
-        <p class="eyebrow">NEXT</p>
-        <h2>From survey to experiment</h2>
-        <p class="lead" style="margin: var(--space-4) auto var(--space-6);">The following chapters answer the four questions above empirically — first on the synthetic AIXI-Shape and TXUXI benchmarks, where the ground truth is known by construction, then on a real dermatological Inception-V4 classifier in the V-MedCAV chapter, where it is not.</p>
-        <div class="hero-cta" style="justify-content: center;">
+      <div class="cta-inner reveal">
+        <p class="eyebrow">Next</p>
+        <h2>From review to experiment</h2>
+        <p class="lead">The controlled validation on AIXI-Shape and TXUXI, followed by the clinical transfer to a dermatological classifier.</p>
+        <div class="hero-cta">
           <a href="aixi-txuxi.html" class="btn btn-primary btn-arrow">Aixi &amp; Txuxi</a>
           <a href="v-medcav.html" class="btn btn-secondary btn-arrow">V-Medcav</a>
         </div>
@@ -573,79 +370,7 @@
   </div>
 </footer>
 
-<nav class="bottom-nav">
-  <div class="bottom-nav-inner">
-    <a href="index.html">Home</a>
-    <a href="landing.html">Introduction</a>
-    <a href="state-of-the-art.html" class="active">State of the Art</a>
-    <a href="aixi-txuxi.html">Aixi &amp; Txuxi</a>
-    <a href="v-medcav.html">V-Medcav</a>
-  </div>
-</nav>
+<nav class="progress-line" id="progressLine" aria-label="Section progress"></nav>
 
-<div class="progress-line" id="progressLine"></div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  var sections = document.querySelectorAll('section[data-od-id]');
-  var line = document.getElementById('progressLine');
-  var inner = document.createElement('div'); inner.className = 'progress-inner';
-  var wrap = document.createElement('div'); wrap.className = 'progress-track-wrap';
-  var track = document.createElement('div'); track.className = 'progress-track';
-  var fill = document.createElement('div'); fill.className = 'progress-fill';
-  track.appendChild(fill); wrap.appendChild(track);
-  var nodesWrap = document.createElement('div'); nodesWrap.className = 'progress-nodes';
-  var nodeData = [];
-  sections.forEach(function(s, i) {
-    var label = s.getAttribute('data-progress-label') || 'Section ' + (i + 1);
-    var level = s.getAttribute('data-progress-level') || 'subsection';
-    var n = document.createElement('div');
-    n.className = 'progress-node ' + level;
-    var tip = document.createElement('span'); tip.className = 'progress-tooltip'; tip.textContent = label;
-    n.appendChild(tip);
-    n.addEventListener('click', function() { var r = s.getBoundingClientRect(); window.scrollTo({ top: window.scrollY + r.top - 80, behavior: 'smooth' }); });
-    nodesWrap.appendChild(n);
-    nodeData.push({ el: n, section: s });
-  });
-  wrap.appendChild(nodesWrap); inner.appendChild(wrap);
-  line.appendChild(inner);
-
-  function updateProgress() {
-    var docH = document.documentElement.scrollHeight - window.innerHeight;
-    var progress = docH > 0 ? window.scrollY / docH : 0;
-    fill.style.width = Math.min(progress * 100, 100) + '%';
-    var first = sections[0], last = sections[sections.length - 1];
-    var totalSpan = last.offsetTop - first.offsetTop;
-    nodeData.forEach(function(d) {
-      var p = totalSpan > 0 ? (d.section.offsetTop - first.offsetTop) / totalSpan : 0;
-      d.el.style.left = (p * 100) + '%';
-      d.el.classList.toggle('filled', p <= progress);
-    });
-  }
-  window.addEventListener('scroll', updateProgress);
-  window.addEventListener('resize', updateProgress);
-  updateProgress();
-
-  var scrollEls = document.querySelectorAll('.scroll-entrance');
-  var scrollObs = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); scrollObs.unobserve(e.target); } });
-  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-  scrollEls.forEach(function(el) { scrollObs.observe(el); });
-});
-</script>
-
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  renderMathInElement(document.body, {
-    delimiters: [
-      {left: '$$', right: '$$', display: true},
-      {left: '$', right: '$', display: false}
-    ],
-    throwOnError: false
-  });
-});
-</script>
 </body>
 </html>

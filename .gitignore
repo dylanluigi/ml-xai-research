@@ -7,3 +7,7 @@ DESIGN-MANIFEST.json
 .vscode/
 .od-skills/
 .DS_Store
+.file-versions/
+.od-frames/
+*.pdf
+drawing-*.png
