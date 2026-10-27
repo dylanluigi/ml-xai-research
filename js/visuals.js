@@ -175,6 +175,127 @@
     setConcept(CONCEPTS[0]);
   }
 
+  /* ── this project: the interpretation g : E_m → E_h in its two phases ──
+     Left, a layer's activation map in the model space E_m; right, the human
+     concept vocabulary E_h of each phase; the links are the mapping g. The map
+     pattern is schematic; concepts and phase facts come from the thesis. */
+  function interpretationMap(host) {
+    var W = 320, H = 244;
+    var svg = mount(host, W, H);
+    var readout = label(svg, 160, 238, '', 'viz-readout');
+    label(svg, 64, 22, 'Eₘ · model', 'ca-label ca-label--meta', 'middle');
+    label(svg, 256, 22, 'Eₕ · concepts', 'ca-label ca-label--meta', 'middle');
+    label(svg, 160, 22, 'g : Eₘ → Eₕ', 'ca-label ca-label--accent', 'middle');
+
+    var PHASES = [
+      {
+        id: 'controlled', name: 'Controlled phase',
+        note: 'AIXI-Shape and TXUXI · ground truth known',
+        blobs: [[2.2, 2.0, 1.1, 1], [4.2, 4.0, 0.8, 0.7]],
+        concepts: [
+          { c: 'circle', d: 'Circle · per-pixel mask available' },
+          { c: 'square', d: 'Square · per-pixel mask available' },
+          { c: 'cross', d: 'Cross · per-pixel mask available' }
+        ]
+      },
+      {
+        id: 'clinical', name: 'Clinical phase',
+        note: 'V-MedCAV · 17 dermoscopic concepts',
+        blobs: [[2.6, 2.6, 1.7, 1], [1.4, 3.8, 0.9, 0.55], [4.0, 1.6, 0.8, 0.45]],
+        concepts: [
+          { c: 'PN_T', d: 'Typical Pigment Network · derm7pt · Mel−' },
+          { c: 'BWV', d: 'Blue-Whitish Veil · derm7pt · Mel+' },
+          { c: 'ASYM', d: 'Asymmetry · PH2 · Mel+' },
+          { c: 'COL3', d: 'Three or More Colours · PH2 · Mel+' }
+        ]
+      }
+    ];
+
+    /* activation map: 6 × 6 cells, one feature map of layer l */
+    var GX = 16, GY = 48, STEP = 16, CELL = 14, N = 6;
+    el('rect', { class: 'im-sheet', x: GX - 2 + 8, y: GY - 2 - 8, width: N * STEP + 2, height: N * STEP + 2, rx: 3 }, svg);
+    el('rect', { class: 'im-sheet', x: GX - 2 + 4, y: GY - 2 - 4, width: N * STEP + 2, height: N * STEP + 2, rx: 3 }, svg);
+    el('rect', { class: 'im-frame', x: GX - 2, y: GY - 2, width: N * STEP + 2, height: N * STEP + 2, rx: 3 }, svg);
+    var cells = [];
+    for (var r = 0; r < N; r++) {
+      for (var c = 0; c < N; c++) {
+        var cell = el('rect', { class: 'im-cell', x: GX + c * STEP, y: GY + r * STEP, width: CELL, height: CELL, rx: 1.5 }, svg);
+        cell.style.setProperty('--d', (r * N + c) * 12 + 'ms');
+        cells.push({ el: cell, r: r, c: c });
+      }
+    }
+    label(svg, 64, 162, 'layer l activations', 'ca-label', 'middle');
+    var source = { x: GX + N * STEP + 4, y: GY + (N * STEP) / 2 };
+
+    var links = el('g', {}, svg);
+    var chips = el('g', {}, svg);
+    var noteText = label(svg, 160, 196, '', 'ca-label', 'middle');
+    var items = [], current;
+
+    function setPhase(p) {
+      current = p;
+      cells.forEach(function (k) {
+        var v = 0;
+        p.blobs.forEach(function (b) {
+          var dx = k.c - b[0], dy = k.r - b[1];
+          v += b[3] * Math.exp(-(dx * dx + dy * dy) / (2 * b[2] * b[2]));
+        });
+        k.el.style.setProperty('--v', Math.min(1, 0.08 + v * 0.92).toFixed(2));
+      });
+      while (links.firstChild) links.removeChild(links.firstChild);
+      while (chips.firstChild) chips.removeChild(chips.firstChild);
+      var n = p.concepts.length, gap = 32, top = source.y - ((n - 1) * gap) / 2;
+      items = p.concepts.map(function (k, i) {
+        var y = top + i * gap, x = 204;
+        var path = el('path', {
+          class: 'im-link', pathLength: 1,
+          d: 'M' + source.x + ' ' + source.y + ' C' + (source.x + 48) + ' ' + source.y + ' ' + (x - 48) + ' ' + y + ' ' + x + ' ' + y
+        }, links);
+        path.style.setProperty('--d', (200 + i * 80) + 'ms');
+        var g = el('g', { class: 'im-chip', tabindex: 0, role: 'img', 'aria-label': k.d }, chips);
+        g.style.setProperty('--d', (360 + i * 80) + 'ms');
+        el('rect', { x: x, y: y - 11, width: 104, height: 22, rx: 3 }, g);
+        label(g, x + 52, y + 4, k.c, '', 'middle');
+        var item = { g: g, path: path, k: k };
+        function on() { activate(item); }
+        function off() { activate(null); }
+        g.addEventListener('pointerenter', on);
+        g.addEventListener('focus', on);
+        g.addEventListener('pointerleave', off);
+        g.addEventListener('blur', off);
+        return item;
+      });
+      noteText.textContent = p.note;
+      buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.__p === p)); });
+      readout.textContent = 'Hover a concept to read it';
+    }
+    function activate(item) {
+      host.classList.toggle('has-hover', !!item);
+      items.forEach(function (o) {
+        o.g.classList.toggle('is-active', o === item);
+        o.path.classList.toggle('is-active', o === item);
+      });
+      readout.textContent = item ? item.k.d : 'Hover a concept to read it';
+    }
+
+    var bar = document.createElement('div');
+    bar.className = 'ca-controls';
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', 'Phase of the project');
+    var buttons = PHASES.map(function (p) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ca-chip';
+      b.textContent = p.name;
+      b.__p = p;
+      b.addEventListener('click', function () { setPhase(p); });
+      bar.appendChild(b);
+      return b;
+    });
+    host.appendChild(bar);
+    setPhase(PHASES[0]);
+  }
+
   /* ── taxonomy of the methods reviewed in Chapter 2 ── */
   function taxonomy(host) {
     var W = 320, H = 210, DEFAULT = 'Hover a branch to see its methods';
@@ -309,7 +430,7 @@
   }
 
   /* ── build visuals, start each when it scrolls into view ── */
-  var builders = { 'concept-space': conceptSpace, taxonomy: taxonomy, 'pool-auc': poolAuc, 'derm-attr': dermAttr };
+  var builders = { 'concept-space': conceptSpace, 'interpretation-map': interpretationMap, taxonomy: taxonomy, 'pool-auc': poolAuc, 'derm-attr': dermAttr };
   var hosts = document.querySelectorAll('[data-visual]');
   var seen = 'IntersectionObserver' in window && !reduceMotion
     ? new IntersectionObserver(function (entries) {
